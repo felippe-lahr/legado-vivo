@@ -117,7 +117,13 @@ export async function finalizarQuiz(sessionId: string): Promise<Profile> {
     throw new Error("O quiz ainda não foi totalmente respondido.");
   }
 
-  const profile = await gerarPerfil(session.ageGroup, answers);
+  let profile: Profile;
+  try {
+    profile = await gerarPerfil(session.ageGroup, answers);
+  } catch (err) {
+    console.error("[finalizarQuiz] Falha ao gerar o perfil:", err);
+    throw err;
+  }
 
   await prisma.session.update({
     where: { id: sessionId },

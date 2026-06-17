@@ -3,7 +3,8 @@ import { systemPrompt, getFaixa, flattenPerguntas, getPerguntaOrigem } from "./q
 import type { Answer, Faixa, PerguntaComBloco, Profile } from "./types";
 
 // Modelo solicitado para as Server Actions do Legado Vivo.
-const MODEL = "claude-sonnet-4-6";
+// Pode ser sobrescrito por variável de ambiente (sem precisar mexer no código).
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
 let client: Anthropic | null = null;
 function getClient(): Anthropic {
@@ -70,12 +71,18 @@ export async function gerarPerguntaDinamica(
     .filter(Boolean)
     .join("\n");
 
-  const message = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: 300,
-    system,
-    messages: [{ role: "user", content: userContent }],
-  });
+  let message: Anthropic.Message;
+  try {
+    message = await getClient().messages.create({
+      model: MODEL,
+      max_tokens: 300,
+      system,
+      messages: [{ role: "user", content: userContent }],
+    });
+  } catch (err) {
+    console.error("[gerarPerguntaDinamica] Falha na Claude API:", err);
+    throw err;
+  }
 
   const texto = textOf(message).replace(/^["']|["']$/g, "").trim();
   return texto || "O que essa reflexão desperta em você agora?";
@@ -128,12 +135,18 @@ export async function gerarPerfil(
     "Responda APENAS com o JSON válido.",
   ].join("\n");
 
-  const message = await getClient().messages.create({
-    model: MODEL,
-    max_tokens: 2000,
-    system,
-    messages: [{ role: "user", content: userContent }],
-  });
+  let message: Anthropic.Message;
+  try {
+    message = await getClient().messages.create({
+      model: MODEL,
+      max_tokens: 2000,
+      system,
+      messages: [{ role: "user", content: userContent }],
+    });
+  } catch (err) {
+    console.error("[gerarPerfil] Falha na Claude API:", err);
+    throw err;
+  }
 
   const data = parseJson(textOf(message)) as Profile;
 

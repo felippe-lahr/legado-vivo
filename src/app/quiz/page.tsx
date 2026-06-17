@@ -5,12 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getFaixa, flattenPerguntas } from "@/lib/questions";
 import { emojiDoIcone } from "@/lib/icones";
 import type { Bloco, Faixa, PerguntaComBloco } from "@/lib/types";
-import {
-  getSessionState,
-  obterPergunta,
-  salvarResposta,
-  finalizarQuiz,
-} from "../actions";
+import { getSessionState, obterPergunta, salvarResposta } from "../actions";
 
 function ProgressoBlocos({
   faixa,
@@ -63,6 +58,7 @@ function QuizInterno() {
   const [textoPergunta, setTextoPergunta] = useState("");
   const [resposta, setResposta] = useState("");
   const [carregandoPergunta, setCarregandoPergunta] = useState(true);
+  const [falhaPergunta, setFalhaPergunta] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [finalizando, setFinalizando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -76,6 +72,7 @@ function QuizInterno() {
       setPerguntaAtual(pergunta);
       setResposta("");
       setErro(null);
+      setFalhaPergunta(false);
       if (!pergunta || !sessionId) return;
 
       if (pergunta.tipo === "fixa" && pergunta.texto) {
@@ -84,12 +81,15 @@ function QuizInterno() {
         return;
       }
 
+      // Pergunta dinâmica: limpa o texto anterior para não parecer repetição.
+      setTextoPergunta("");
       setCarregandoPergunta(true);
       try {
         const texto = await obterPergunta(sessionId, numero);
         setTextoPergunta(texto);
+        setFalhaPergunta(false);
       } catch {
-        setErro("Não conseguimos gerar a próxima pergunta. Tente novamente.");
+        setFalhaPergunta(true);
       } finally {
         setCarregandoPergunta(false);
       }
@@ -150,8 +150,10 @@ function QuizInterno() {
       );
 
       if (numeroAtual >= totalRef.current) {
+        // A resposta já foi salva. A geração do perfil acontece na página de
+        // resultado (que tem sua própria tela de carregamento e retry), então
+        // navegamos sempre — mesmo que a IA demore.
         setFinalizando(true);
-        await finalizarQuiz(sessionId);
         router.push(`/resultado?session=${sessionId}`);
         return;
       }
@@ -221,6 +223,21 @@ function QuizInterno() {
               <p className="text-creme/60 text-xl font-titulo pulse-soft">
                 Preparando uma pergunta só para você…
               </p>
+            ) : falhaPergunta ? (
+              <div className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5">
+                <p className="text-creme mb-1">
+                  Não conseguimos preparar esta pergunta agora.
+                </p>
+                <p className="text-creme-suave/70 text-sm mb-4">
+                  Foi um soluço momentâneo. Tente de novo.
+                </p>
+                <button
+                  onClick={() => carregarPergunta(perguntas, numeroAtual)}
+                  className="rounded-full bg-roxo px-6 py-2.5 text-fundo font-semibold text-sm"
+                >
+                  Tentar novamente
+                </button>
+              </div>
             ) : (
               <>
                 <h1 className="text-2xl text-creme mb-3 leading-snug">
@@ -245,19 +262,21 @@ function QuizInterno() {
 
             {erro && <p className="text-red-300 text-sm mt-3">{erro}</p>}
 
-            <div className="mt-auto pt-6">
-              <button
-                onClick={continuar}
-                disabled={carregandoPergunta || enviando || !resposta.trim()}
-                className="w-full rounded-full bg-roxo py-3.5 text-fundo font-semibold text-base transition active:scale-[0.99] disabled:opacity-40"
-              >
-                {enviando
-                  ? "Guardando…"
-                  : numeroAtual >= totalRef.current
-                    ? "Ver meu perfil"
-                    : "Continuar"}
-              </button>
-            </div>
+            {!falhaPergunta && (
+              <div className="mt-auto pt-6">
+                <button
+                  onClick={continuar}
+                  disabled={carregandoPergunta || enviando || !resposta.trim()}
+                  className="w-full rounded-full bg-roxo py-3.5 text-fundo font-semibold text-base transition active:scale-[0.99] disabled:opacity-40"
+                >
+                  {enviando
+                    ? "Guardando…"
+                    : numeroAtual >= totalRef.current
+                      ? "Ver meu perfil"
+                      : "Continuar"}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
