@@ -24,29 +24,35 @@ export async function criarPreferencia(
 ): Promise<string> {
   const preference = new Preference(getConfig());
 
-  const result = await preference.create({
-    body: {
-      items: [
-        {
-          id: `legado-vivo-${sessionId}`,
-          title: "Legado Vivo — Seu perfil completo",
-          description: "Diagnóstico completo: arquétipo, dimensões e ações.",
-          quantity: 1,
-          unit_price: PRECO,
-          currency_id: "BRL",
+  let result;
+  try {
+    result = await preference.create({
+      body: {
+        items: [
+          {
+            id: `legado-vivo-${sessionId}`,
+            title: "Legado Vivo — Seu perfil completo",
+            description: "Diagnóstico completo: arquétipo, dimensões e ações.",
+            quantity: 1,
+            unit_price: PRECO,
+            currency_id: "BRL",
+          },
+        ],
+        payer: { email },
+        external_reference: sessionId,
+        back_urls: {
+          success: `${baseUrl()}/resultado?session=${sessionId}&pago=1`,
+          pending: `${baseUrl()}/resultado?session=${sessionId}`,
+          failure: `${baseUrl()}/checkout?session=${sessionId}&erro=1`,
         },
-      ],
-      payer: { email },
-      external_reference: sessionId,
-      back_urls: {
-        success: `${baseUrl()}/resultado?session=${sessionId}&pago=1`,
-        pending: `${baseUrl()}/resultado?session=${sessionId}`,
-        failure: `${baseUrl()}/checkout?session=${sessionId}&erro=1`,
+        auto_return: "approved",
+        notification_url: `${baseUrl()}/api/mercadopago/webhook`,
       },
-      auto_return: "approved",
-      notification_url: `${baseUrl()}/api/mercadopago/webhook`,
-    },
-  });
+    });
+  } catch (err) {
+    console.error("[criarPreferencia] Falha no Mercado Pago:", err);
+    throw err;
+  }
 
   const url = result.init_point ?? result.sandbox_init_point;
   if (!url) throw new Error("Mercado Pago não retornou a URL de checkout.");

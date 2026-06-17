@@ -176,5 +176,10 @@ export async function iniciarCheckout(
   // Importação dinâmica para não acoplar o SDK do Mercado Pago ao bundle
   // das demais actions.
   const { criarPreferencia } = await import("@/lib/mercadopago");
-  return criarPreferencia(sessionId, emailLimpo);
+  try {
+    return await criarPreferencia(sessionId, emailLimpo);
+  } catch (err) {
+    console.error("[iniciarCheckout] Falha ao criar preferência:", err);
+    throw err;
+  }
 }
