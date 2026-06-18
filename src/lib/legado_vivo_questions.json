@@ -1,15 +1,15 @@
 {
   "meta": {
     "produto": "Legado Vivo",
-    "versao": "1.0",
-    "total_perguntas_por_faixa": 12,
+    "versao": "2.0",
+    "total_perguntas_por_faixa": 20,
     "perguntas_fixas": 8,
-    "perguntas_dinamicas_ia": 4,
+    "perguntas_dinamicas_ia": 12,
     "blocos": ["Identidade", "Relações", "Propósito", "Legado"]
   },
   "system_prompt": {
     "base": "Você é um ouvinte profundo especializado em histórias de vida de pessoas acima de 50 anos. Sua função não é avaliar — é revelar. Você enxerga o que as pessoas carregam sem perceber: talentos esquecidos, medos disfarçados de prudência, sonhos que viraram 'bobagem'. Suas perguntas são curtas, diretas e nunca julgam. Você fala com calor humano genuíno, nunca com condescendência. Você nunca usa as palavras: idoso, terceira idade, melhor idade, sênior. Você trata cada pessoa como protagonista da própria história — porque ela é.",
-    "instrucao_dinamica": "Para perguntas dinâmicas: responda APENAS com a pergunta. Sem introdução, sem elogios, sem 'que bom que você disse isso'. Máximo 2 linhas.",
+    "instrucao_dinamica": "Gere UMA pergunta de aprofundamento poderosa baseada especificamente na resposta da pessoa. A pergunta deve: ter no máximo 2 linhas; não repetir palavras da pergunta anterior; ir mais fundo no que a pessoa revelou, não mudar de assunto; nunca ter resposta certa ou errada. Responda APENAS com a pergunta. Sem introdução, sem elogios, sem 'que bom que você compartilhou isso'.",
     "instrucao_perfil": "Para o perfil final: responda APENAS com JSON válido. Sem markdown, sem texto antes ou depois.",
     "perfil_schema": {
       "arquetipo": "Nome poético do arquétipo (ex: O Guardião da Travessia)",
@@ -29,7 +29,7 @@
         "Ação concreta e simples para os próximos 30 dias",
         "Ação concreta e simples para os próximos 30 dias"
       ],
-      "pergunta_final_reflexao": "A pergunta mais poderosa possível para essa pessoa específica carregar — algo que ela vai pensar por dias"
+      "pergunta_final_reflexao": "A pergunta mais poderosa possível para essa pessoa específica carregar — algo que ela vai pensar por dias e que vai alimentar a Carta 1"
     }
   },
   "faixas": {
@@ -50,27 +50,42 @@
               "tipo": "fixa",
               "texto": "O que mudou em você nos últimos 5 anos que as pessoas ao redor ainda não perceberam?",
               "subtexto": "Não precisa ser algo grande. Pode ser uma convicção, um cansaço, um desejo novo.",
-              "intencao": "Abre o inconsciente sem assustar. A pessoa responde o que já sente mas nunca verbalizou.",
-              "alimenta_dinamica": false
+              "intencao": "Abre o inconsciente sem assustar."
             },
             {
               "id": "5060-id-2",
               "numero": 2,
               "tipo": "fixa",
-              "texto": "Se um amigo próximo fosse te descrever para alguém que nunca te conheceu, o que ele diria — e o que ele deixaria de fora?",
-              "subtexto": "Pense em alguém que te conhece de verdade.",
-              "intencao": "Revela a distância entre quem a pessoa é e quem ela acha que os outros veem.",
-              "alimenta_dinamica": false
+              "texto": "Tem alguma versão sua que você deixou para trás com o tempo — e às vezes ainda sente falta?",
+              "subtexto": "Pode ser uma característica, um sonho, uma forma de ser.",
+              "intencao": "Acessa partes reprimidas sem ser ameaçador."
             },
             {
               "id": "5060-id-3",
               "numero": 3,
-              "tipo": "fixa",
-              "texto": "Tem alguma versão sua que você deixou para trás com o tempo — e às vezes ainda sente falta?",
-              "subtexto": "Pode ser uma característica, um sonho, uma forma de ser.",
-              "intencao": "Acessa partes reprimidas sem ser ameaçador. Gera respostas muito ricas para a IA trabalhar.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na versão de si mesmo que a pessoa disse ter deixado para trás, gere uma pergunta que explore o que aconteceria se ela resgatasse um pedaço dessa versão hoje."
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_2"
+            },
+            {
+              "id": "5060-id-4",
+              "numero": 4,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_3"
+            },
+            {
+              "id": "5060-id-5",
+              "numero": 5,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_4"
             }
           ]
         },
@@ -82,23 +97,47 @@
           "icone": "heart",
           "perguntas": [
             {
-              "id": "5060-rel-4",
-              "numero": 4,
-              "tipo": "dinamica",
-              "texto": null,
-              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Aprofunda o que a pessoa revelou sobre si mesma na pergunta 3.",
-              "gerada_por": "resposta_3"
-            },
-            {
-              "id": "5060-rel-5",
-              "numero": 5,
+              "id": "5060-rel-6",
+              "numero": 6,
               "tipo": "fixa",
               "texto": "Tem alguém na sua vida para quem você ainda não disse o que sente — e o tempo está passando?",
               "subtexto": "Pode ser gratidão, orgulho, um pedido de perdão ou simplesmente 'te amo'.",
-              "intencao": "Uma das perguntas mais poderosas. Quase todos têm alguém. Gera reflexão profunda e movimento.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na pessoa ou sentimento que foi mencionado, gere uma pergunta que explore o que impede essa expressão de acontecer — sem julgamento."
+              "intencao": "Uma das perguntas mais poderosas. Quase todos têm alguém."
+            },
+            {
+              "id": "5060-rel-7",
+              "numero": 7,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_6"
+            },
+            {
+              "id": "5060-rel-8",
+              "numero": 8,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_7"
+            },
+            {
+              "id": "5060-rel-9",
+              "numero": 9,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_8"
+            },
+            {
+              "id": "5060-rel-10",
+              "numero": 10,
+              "tipo": "fixa",
+              "texto": "Quem é a pessoa que mais moldou quem você é hoje — e ela sabe disso?",
+              "subtexto": "Pode estar perto ou já ter partido.",
+              "intencao": "Fecha o bloco de relações reconhecendo influências formadoras."
             }
           ]
         },
@@ -110,32 +149,47 @@
           "icone": "flame",
           "perguntas": [
             {
-              "id": "5060-prop-6",
-              "numero": 6,
-              "tipo": "dinamica",
-              "texto": null,
-              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Aprofunda a relação ou sentimento revelado na pergunta 5.",
-              "gerada_por": "resposta_5"
-            },
-            {
-              "id": "5060-prop-7",
-              "numero": 7,
+              "id": "5060-prop-11",
+              "numero": 11,
               "tipo": "fixa",
               "texto": "O que você faz — ou fazia — que te faz perder a noção do tempo?",
               "subtexto": "Pode ser algo que você ainda faz, ou algo que ficou para trás.",
-              "intencao": "Identifica o estado de flow. Revela talentos que a pessoa não reconhece como talentos.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na atividade de flow mencionada, gere uma pergunta que explore por que ela ficou para trás ou como ela poderia voltar de forma realista."
+              "intencao": "Identifica o estado de flow e talentos não reconhecidos."
             },
             {
-              "id": "5060-prop-8",
-              "numero": 8,
+              "id": "5060-prop-12",
+              "numero": 12,
               "tipo": "dinamica",
               "texto": null,
               "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Explora por que a atividade de flow ficou para trás ou como poderia voltar.",
-              "gerada_por": "resposta_7"
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_11"
+            },
+            {
+              "id": "5060-prop-13",
+              "numero": 13,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_12"
+            },
+            {
+              "id": "5060-prop-14",
+              "numero": 14,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_13"
+            },
+            {
+              "id": "5060-prop-15",
+              "numero": 15,
+              "tipo": "fixa",
+              "texto": "Se dinheiro não fosse problema, como você gastaria suas próximas segundas-feiras?",
+              "subtexto": "Não as férias — o dia comum.",
+              "intencao": "Revela o desejo real por trás da rotina."
             }
           ]
         },
@@ -147,36 +201,47 @@
           "icone": "tree",
           "perguntas": [
             {
-              "id": "5060-leg-9",
-              "numero": 9,
+              "id": "5060-leg-16",
+              "numero": 16,
               "tipo": "fixa",
               "texto": "Quando você imagina que alguém vai se lembrar de você daqui a 20 anos, o que você quer que essa pessoa sinta?",
               "subtexto": "Não o que ela vai dizer — o que ela vai sentir.",
-              "intencao": "Direciona para o legado emocional, não material. Muito mais revelador e movedor."
+              "intencao": "Direciona para o legado emocional, não material."
             },
             {
-              "id": "5060-leg-10",
-              "numero": 10,
-              "tipo": "fixa",
-              "texto": "Se você pudesse mudar uma única coisa nos próximos 12 meses, o que seria — e o que te impede de já ter feito?",
-              "subtexto": "Pode ser algo pequeno ou algo enorme.",
-              "intencao": "Combina desejo e bloqueio. Revela o padrão limitante mais importante para o diagnóstico."
+              "id": "5060-leg-17",
+              "numero": 17,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_16"
             },
             {
-              "id": "5060-leg-11",
-              "numero": 11,
-              "tipo": "fixa",
-              "texto": "O que você sabe hoje — com toda a sua experiência — que gostaria de poder dizer para o seu eu de 30 anos?",
-              "subtexto": "Fale como se essa conversa fosse possível.",
-              "intencao": "Coloca a pessoa no papel de sábio. Revela o que ela mais valoriza e o que mais lamenta."
+              "id": "5060-leg-18",
+              "numero": 18,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_17"
             },
             {
-              "id": "5060-leg-12",
-              "numero": 12,
+              "id": "5060-leg-19",
+              "numero": 19,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_18"
+            },
+            {
+              "id": "5060-leg-20",
+              "numero": 20,
               "tipo": "fixa",
               "texto": "Se a sua vida fosse um livro, como se chamaria o próximo capítulo?",
               "subtexto": "Não existe resposta certa. Existe a sua resposta.",
-              "intencao": "Encerra com esperança e agência. A resposta alimenta diretamente a geração do arquétipo."
+              "intencao": "Encerra com esperança e agência. Alimenta a geração do arquétipo."
             }
           ]
         }
@@ -199,8 +264,7 @@
               "tipo": "fixa",
               "texto": "A aposentadoria — ou a chegada dela — trouxe mais liberdade ou mais inquietação?",
               "subtexto": "Seja honesto. Muita gente sente as duas coisas ao mesmo tempo.",
-              "intencao": "Valida sentimentos ambíguos e abre espaço para vulnerabilidade logo no início.",
-              "alimenta_dinamica": false
+              "intencao": "Valida sentimentos ambíguos e abre espaço para vulnerabilidade."
             },
             {
               "id": "6070-id-2",
@@ -208,18 +272,34 @@
               "tipo": "fixa",
               "texto": "Quem você é quando não tem nenhum papel a cumprir — nem pai, nem mãe, nem profissional, nem cônjuge?",
               "subtexto": "Só você. Sem função. Quem aparece?",
-              "intencao": "Toca na crise de identidade pós-papéis. Muito comum nessa faixa e raramente verbalizado.",
-              "alimenta_dinamica": false
+              "intencao": "Toca na crise de identidade pós-papéis."
             },
             {
               "id": "6070-id-3",
               "numero": 3,
-              "tipo": "fixa",
-              "texto": "O que você descobriu sobre si mesmo que só foi possível descobrir agora — com essa idade?",
-              "subtexto": "Algo que a correria da vida não deixava enxergar antes.",
-              "intencao": "Reposiciona a experiência como vantagem, não como perda.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na descoberta pessoal que a pessoa compartilhou, gere uma pergunta que explore como ela pode usar isso de forma ativa nos próximos anos."
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_2"
+            },
+            {
+              "id": "6070-id-4",
+              "numero": 4,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_3"
+            },
+            {
+              "id": "6070-id-5",
+              "numero": 5,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_4"
             }
           ]
         },
@@ -231,23 +311,47 @@
           "icone": "heart",
           "perguntas": [
             {
-              "id": "6070-rel-4",
-              "numero": 4,
-              "tipo": "dinamica",
-              "texto": null,
-              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Aprofunda a descoberta pessoal da pergunta 3.",
-              "gerada_por": "resposta_3"
-            },
-            {
-              "id": "6070-rel-5",
-              "numero": 5,
+              "id": "6070-rel-6",
+              "numero": 6,
               "tipo": "fixa",
               "texto": "Tem alguém na sua vida com quem você se afastou — não por briga, mas pela correria — e sente falta?",
               "subtexto": "Uma amizade, um irmão, alguém que ficou para trás sem querer.",
-              "intencao": "Explora a solidão silenciosa tão comum nessa fase. Abre porta para ação concreta.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na pessoa ou relação mencionada, gere uma pergunta que explore o que essa reconexão significaria e o que impede que ela aconteça."
+              "intencao": "Explora a solidão silenciosa tão comum nessa fase."
+            },
+            {
+              "id": "6070-rel-7",
+              "numero": 7,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_6"
+            },
+            {
+              "id": "6070-rel-8",
+              "numero": 8,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_7"
+            },
+            {
+              "id": "6070-rel-9",
+              "numero": 9,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_8"
+            },
+            {
+              "id": "6070-rel-10",
+              "numero": 10,
+              "tipo": "fixa",
+              "texto": "Quem você gostaria de ter por perto com mais frequência — e o que tem te impedido?",
+              "subtexto": "Pode ser distância, orgulho, vergonha ou só o hábito.",
+              "intencao": "Fecha o bloco apontando para uma ação concreta de reconexão."
             }
           ]
         },
@@ -259,32 +363,47 @@
           "icone": "flame",
           "perguntas": [
             {
-              "id": "6070-prop-6",
-              "numero": 6,
-              "tipo": "dinamica",
-              "texto": null,
-              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Aprofunda a relação ou afastamento revelado na pergunta 5.",
-              "gerada_por": "resposta_5"
-            },
-            {
-              "id": "6070-prop-7",
-              "numero": 7,
+              "id": "6070-prop-11",
+              "numero": 11,
               "tipo": "fixa",
               "texto": "O que você faz hoje que sente que realmente importa — para além de você mesmo?",
               "subtexto": "Pode ser algo grande ou algo que parece pequeno mas não é.",
-              "intencao": "Identifica a fonte de propósito atual. Se não há resposta, revela o vazio — igualmente importante.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na atividade ou contribuição mencionada, gere uma pergunta que explore como essa fonte de propósito poderia crescer ou ser compartilhada com outros."
+              "intencao": "Identifica a fonte de propósito atual — ou o vazio."
             },
             {
-              "id": "6070-prop-8",
-              "numero": 8,
+              "id": "6070-prop-12",
+              "numero": 12,
               "tipo": "dinamica",
               "texto": null,
               "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Explora como o propósito atual poderia crescer ou ser compartilhado.",
-              "gerada_por": "resposta_7"
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_11"
+            },
+            {
+              "id": "6070-prop-13",
+              "numero": 13,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_12"
+            },
+            {
+              "id": "6070-prop-14",
+              "numero": 14,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_13"
+            },
+            {
+              "id": "6070-prop-15",
+              "numero": 15,
+              "tipo": "fixa",
+              "texto": "Que tipo de contribuição você ainda gostaria de fazer no mundo, por menor que pareça?",
+              "subtexto": "Algo que faria você sentir que valeu a pena.",
+              "intencao": "Aponta para um propósito ainda não realizado."
             }
           ]
         },
@@ -296,36 +415,47 @@
           "icone": "tree",
           "perguntas": [
             {
-              "id": "6070-leg-9",
-              "numero": 9,
+              "id": "6070-leg-16",
+              "numero": 16,
               "tipo": "fixa",
               "texto": "Se você pudesse passar uma única lição de vida para alguém mais jovem — não um conselho, mas algo que você viveu — qual seria?",
               "subtexto": "Algo que só faz sentido depois de ter passado por isso.",
-              "intencao": "Acessa a sabedoria acumulada e reposiciona a pessoa como fonte de valor para outros."
+              "intencao": "Acessa a sabedoria acumulada e reposiciona a pessoa como fonte de valor."
             },
             {
-              "id": "6070-leg-10",
-              "numero": 10,
-              "tipo": "fixa",
-              "texto": "O que você ainda não fez que, se não fizer, vai se arrepender?",
-              "subtexto": "Pode ser uma viagem, uma conversa, um projeto, uma reconciliação.",
-              "intencao": "Revela o arrependimento antecipado — um dos motivadores mais poderosos para mudança."
+              "id": "6070-leg-17",
+              "numero": 17,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_16"
             },
             {
-              "id": "6070-leg-11",
-              "numero": 11,
-              "tipo": "fixa",
-              "texto": "O que você sabe hoje — com toda a sua experiência — que gostaria de poder dizer para o seu eu de 30 anos?",
-              "subtexto": "Fale como se essa conversa fosse possível.",
-              "intencao": "Coloca a pessoa no papel de sábio. Revela o que ela mais valoriza e o que mais lamenta."
+              "id": "6070-leg-18",
+              "numero": 18,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_17"
             },
             {
-              "id": "6070-leg-12",
-              "numero": 12,
+              "id": "6070-leg-19",
+              "numero": 19,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_18"
+            },
+            {
+              "id": "6070-leg-20",
+              "numero": 20,
               "tipo": "fixa",
               "texto": "Se a sua vida fosse um livro, como se chamaria o próximo capítulo?",
               "subtexto": "Não existe resposta certa. Existe a sua resposta.",
-              "intencao": "Encerra com esperança e agência. A resposta alimenta diretamente a geração do arquétipo."
+              "intencao": "Encerra com esperança e agência. Alimenta a geração do arquétipo."
             }
           ]
         }
@@ -348,27 +478,42 @@
               "tipo": "fixa",
               "texto": "O que você aprendeu sobre a vida que só foi possível aprender vivendo muito?",
               "subtexto": "Esse conhecimento seu é raro. Ninguém mais tem exatamente o que você carrega.",
-              "intencao": "Começa com valorização genuína da experiência. A pessoa se sente vista desde a primeira pergunta.",
-              "alimenta_dinamica": false
+              "intencao": "Começa com valorização genuína da experiência."
             },
             {
               "id": "70p-id-2",
               "numero": 2,
               "tipo": "fixa",
-              "texto": "Quando você se sente mais você mesmo — mais inteiro, mais presente?",
-              "subtexto": "Pense em um momento recente, por menor que pareça.",
-              "intencao": "Identifica o estado de flow e os contextos onde a pessoa se sente viva e autêntica.",
-              "alimenta_dinamica": false
+              "texto": "O que em você permaneceu — mesmo com tudo que a vida trouxe de mudança, perda e tempo?",
+              "subtexto": "Sua essência. O que nada e ninguém conseguiu tirar.",
+              "intencao": "Reforça identidade e continuidade do self."
             },
             {
               "id": "70p-id-3",
               "numero": 3,
-              "tipo": "fixa",
-              "texto": "O que em você permaneceu — mesmo com tudo que a vida trouxe de mudança, perda e tempo?",
-              "subtexto": "Sua essência. O que nada e ninguém conseguiu tirar.",
-              "intencao": "Reforça identidade e continuidade do self — especialmente importante para quem enfrenta perdas.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na essência que a pessoa identificou como permanente, gere uma pergunta que explore como essa parte dela está sendo expressa ou poderia ser mais expressa hoje."
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_2"
+            },
+            {
+              "id": "70p-id-4",
+              "numero": 4,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_3"
+            },
+            {
+              "id": "70p-id-5",
+              "numero": 5,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_4"
             }
           ]
         },
@@ -380,23 +525,47 @@
           "icone": "heart",
           "perguntas": [
             {
-              "id": "70p-rel-4",
-              "numero": 4,
-              "tipo": "dinamica",
-              "texto": null,
-              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Aprofunda a essência permanente revelada na pergunta 3.",
-              "gerada_por": "resposta_3"
-            },
-            {
-              "id": "70p-rel-5",
-              "numero": 5,
+              "id": "70p-rel-6",
+              "numero": 6,
               "tipo": "fixa",
               "texto": "Que parte de você ainda não foi vista pelas pessoas que você ama?",
               "subtexto": "Pode ser uma história, uma habilidade, um sonho que ficou guardado.",
-              "intencao": "Toca na invisibilidade silenciosa. Abre espaço para que a pessoa revele o que mais quer compartilhar.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na parte não vista que a pessoa mencionou, gere uma pergunta que explore o que impede que ela seja compartilhada — e o que aconteceria se fosse."
+              "intencao": "Toca na invisibilidade silenciosa."
+            },
+            {
+              "id": "70p-rel-7",
+              "numero": 7,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_6"
+            },
+            {
+              "id": "70p-rel-8",
+              "numero": 8,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_7"
+            },
+            {
+              "id": "70p-rel-9",
+              "numero": 9,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_8"
+            },
+            {
+              "id": "70p-rel-10",
+              "numero": 10,
+              "tipo": "fixa",
+              "texto": "Quem são as pessoas que fazem você se sentir verdadeiramente em casa?",
+              "subtexto": "Aquelas com quem você não precisa fingir nada.",
+              "intencao": "Fecha o bloco mapeando a rede de pertencimento."
             }
           ]
         },
@@ -408,32 +577,47 @@
           "icone": "flame",
           "perguntas": [
             {
-              "id": "70p-prop-6",
-              "numero": 6,
-              "tipo": "dinamica",
-              "texto": null,
-              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Aprofunda o que ficou escondido revelado na pergunta 5.",
-              "gerada_por": "resposta_5"
-            },
-            {
-              "id": "70p-prop-7",
-              "numero": 7,
+              "id": "70p-prop-11",
+              "numero": 11,
               "tipo": "fixa",
               "texto": "Quem precisa de você — e você sabe disso — mesmo que não digam em voz alta?",
               "subtexto": "Pode ser uma pessoa, um grupo, uma comunidade.",
-              "intencao": "Reforça o senso de utilidade e pertencimento. Combate a solidão e o sentimento de ser um fardo.",
-              "alimenta_dinamica": true,
-              "dinamica_instrucao": "Com base na pessoa ou grupo mencionado, gere uma pergunta que explore como essa presença poderia ser ainda mais intencional e significativa."
+              "intencao": "Reforça o senso de utilidade e pertencimento."
             },
             {
-              "id": "70p-prop-8",
-              "numero": 8,
+              "id": "70p-prop-12",
+              "numero": 12,
               "tipo": "dinamica",
               "texto": null,
               "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
-              "intencao": "Explora como a presença e contribuição poderiam ser mais intencionais.",
-              "gerada_por": "resposta_7"
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_11"
+            },
+            {
+              "id": "70p-prop-13",
+              "numero": 13,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_12"
+            },
+            {
+              "id": "70p-prop-14",
+              "numero": 14,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_13"
+            },
+            {
+              "id": "70p-prop-15",
+              "numero": 15,
+              "tipo": "fixa",
+              "texto": "Quando você se sente mais você mesmo — mais inteiro, mais presente?",
+              "subtexto": "Pense em um momento recente, por menor que pareça.",
+              "intencao": "Identifica o estado de flow e os contextos de autenticidade."
             }
           ]
         },
@@ -445,37 +629,47 @@
           "icone": "tree",
           "perguntas": [
             {
-              "id": "70p-leg-9",
-              "numero": 9,
+              "id": "70p-leg-16",
+              "numero": 16,
               "tipo": "fixa",
               "texto": "Se você pudesse reunir todos que você amou e influenciou numa sala, o que você gostaria de dizer para eles?",
               "subtexto": "Uma fala. Sem cerimônia. Do coração.",
-              "intencao": "Profundamente catártico. Revela valores centrais e o que a pessoa mais quer deixar como mensagem."
+              "intencao": "Profundamente catártico. Revela valores centrais."
             },
             {
-              "id": "70p-leg-10",
-              "numero": 10,
-              "tipo": "fixa",
-              "texto": "Tem algo que você viveu — uma história, uma passagem da sua vida — que você sente que precisa ser contado antes que se perca?",
-              "subtexto": "Algo que só você pode contar do jeito que viveu.",
-              "intencao": "Acessa o desejo de preservação da memória. Muito comum e raramente atendido nessa fase."
+              "id": "70p-leg-17",
+              "numero": 17,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_16"
             },
             {
-              "id": "70p-leg-11",
-              "numero": 11,
-              "tipo": "fixa",
-              "texto": "O que você ainda quer viver — por menor que pareça — que ainda não aconteceu?",
-              "subtexto": "Não precisa ser grandioso. Pode ser algo simples que sempre ficou para depois.",
-              "intencao": "Mantém o olhar voltado para frente, não apenas para o passado. Reforça agência e possibilidade.",
-              "alimenta_dinamica": false
+              "id": "70p-leg-18",
+              "numero": 18,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_17"
             },
             {
-              "id": "70p-leg-12",
-              "numero": 12,
+              "id": "70p-leg-19",
+              "numero": 19,
+              "tipo": "dinamica",
+              "texto": null,
+              "subtexto": "Esta pergunta nasceu do que você compartilhou antes.",
+              "intencao": "Aprofunda a resposta anterior.",
+              "gerada_por": "resposta_18"
+            },
+            {
+              "id": "70p-leg-20",
+              "numero": 20,
               "tipo": "fixa",
               "texto": "Se a sua vida fosse um livro, como se chamaria o próximo capítulo?",
               "subtexto": "Não existe resposta certa. Existe a sua resposta.",
-              "intencao": "Encerra com esperança e agência. A resposta alimenta diretamente a geração do arquétipo."
+              "intencao": "Encerra com esperança e agência. Alimenta a geração do arquétipo."
             }
           ]
         }

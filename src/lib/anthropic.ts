@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { systemPrompt, getFaixa, flattenPerguntas, getPerguntaOrigem } from "./questions";
+import { systemPrompt, getFaixa } from "./questions";
 import type { Answer, Faixa, PerguntaComBloco, Profile } from "./types";
 
 // Modelo solicitado para as Server Actions do Legado Vivo.
@@ -32,9 +32,9 @@ function historico(answers: Answer[]): string {
 }
 
 /**
- * Gera, em tempo real, o texto de uma pergunta dinâmica (perguntas 4, 6 e 8)
- * a partir das respostas anteriores e da `dinamica_instrucao` da pergunta de
- * origem indicada por `gerada_por`.
+ * Gera, em tempo real, o texto de uma pergunta dinâmica de aprofundamento,
+ * com base na resposta imediatamente anterior (própria do bloco), seguindo o
+ * prompt de pergunta dinâmica do produto.
  */
 export async function gerarPerguntaDinamica(
   faixaId: string,
@@ -44,32 +44,31 @@ export async function gerarPerguntaDinamica(
   const faixa = getFaixa(faixaId);
   if (!faixa) throw new Error(`Faixa inválida: ${faixaId}`);
 
-  const origem = getPerguntaOrigem(faixa, perguntaDinamica);
-  const instrucao =
-    origem?.dinamica_instrucao ??
-    "Gere uma pergunta de aprofundamento curta, calorosa e sem julgamento, a partir do que a pessoa compartilhou.";
+  // A pergunta dinâmica nasce da resposta imediatamente anterior.
+  const anterior =
+    answers.find((a) => a.numero === perguntaDinamica.numero - 1) ??
+    answers[answers.length - 1];
 
-  const numeroOrigem = origem?.numero;
-  const respostaOrigem = answers.find((a) => a.numero === numeroOrigem);
-
-  const system = `${systemPrompt.base}\n\nFaixa: ${faixaId} — ${faixa.label}. Tom: ${faixa.tom}\n\n${systemPrompt.instrucao_dinamica}`;
+  const system = `${systemPrompt.base}\n\n${systemPrompt.instrucao_dinamica}`;
 
   const userContent = [
-    `Bloco atual: ${perguntaDinamica.bloco.titulo} (${perguntaDinamica.bloco.descricao}).`,
+    `Faixa etária: ${faixaId} (${faixa.tom})`,
+    `Bloco atual: ${perguntaDinamica.bloco.titulo}`,
+    anterior
+      ? `Pergunta anterior: "${anterior.texto}"`
+      : "Pergunta anterior: (início do bloco)",
+    anterior
+      ? `Resposta da pessoa: "${anterior.resposta}"`
+      : "Resposta da pessoa: (sem resposta anterior)",
     "",
-    "Histórico da conversa até aqui:",
-    historico(answers),
+    "Gere UMA pergunta de aprofundamento poderosa baseada especificamente nesta resposta. A pergunta deve:",
+    "- Ter no máximo 2 linhas",
+    "- Não repetir palavras da pergunta anterior",
+    "- Ir mais fundo no que a pessoa revelou, não mudar de assunto",
+    "- Nunca ter resposta certa ou errada",
     "",
-    respostaOrigem
-      ? `A pergunta dinâmica deve nascer especialmente desta resposta:\n"${respostaOrigem.resposta}"\n(à pergunta: "${respostaOrigem.texto}")`
-      : "",
-    "",
-    `Instrução para esta pergunta: ${instrucao}`,
-    "",
-    "Escreva agora a pergunta. Lembre-se: apenas a pergunta, no máximo 2 linhas.",
-  ]
-    .filter(Boolean)
-    .join("\n");
+    "Responda APENAS com a pergunta.",
+  ].join("\n");
 
   let message: Anthropic.Message;
   try {
@@ -119,7 +118,7 @@ export async function gerarPerfil(
   const schema = JSON.stringify(systemPrompt.perfil_schema, null, 2);
 
   const userContent = [
-    "As 12 respostas da pessoa estão abaixo. Leia tudo com atenção e revele o que ela carrega sem perceber.",
+    `As ${answers.length} respostas da pessoa estão abaixo. Leia tudo com atenção e revele o que ela carrega sem perceber.`,
     "",
     historico(answers),
     "",
