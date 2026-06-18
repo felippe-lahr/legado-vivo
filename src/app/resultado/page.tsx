@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { emojiDoIcone } from "@/lib/icones";
 import type { Profile } from "@/lib/types";
-import { getResultado, finalizarQuiz } from "../actions";
+import { getResultado, finalizarQuiz, obterCarta1 } from "../actions";
 import { ApagarDados } from "../ApagarDados";
 
 function Dimensoes({ dimensoes }: { dimensoes: Record<string, number> }) {
@@ -33,33 +33,59 @@ function Dimensoes({ dimensoes }: { dimensoes: Record<string, number> }) {
   );
 }
 
-function Bloqueado({
+/** Mostra os primeiros N palavras do texto. */
+function primeirasNPalavras(texto: string, n: number): string {
+  return texto.split(/\s+/).slice(0, n).join(" ");
+}
+
+function CartaCortada({
   sessionId,
-  titulo,
+  carta,
 }: {
   sessionId: string;
-  titulo: string;
+  carta: string;
 }) {
   const router = useRouter();
+  const preview = primeirasNPalavras(carta, 70);
+
   return (
-    <div className="relative rounded-2xl border border-roxo/25 bg-fundo-suave p-5 overflow-hidden">
-      <div className="blur-[6px] select-none pointer-events-none">
-        <h3 className="font-titulo text-lg text-creme mb-2">{titulo}</h3>
-        <p className="text-creme-suave/80 text-sm">
-          Conteúdo reservado para o seu perfil completo. Aqui revelamos seus
-          talentos invisíveis, o padrão que te limita e os próximos passos.
+    <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5">
+      <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
+        Carta 1 · Bússola
+      </p>
+      <div className="relative">
+        <p className="text-creme/90 text-sm leading-relaxed whitespace-pre-line">
+          {preview}…
         </p>
+        {/* fade gradient over the cut */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-fundo-suave to-transparent" />
       </div>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-fundo/40 px-4 text-center">
-        <span className="text-2xl">🔒</span>
+      <div className="mt-5 flex flex-col gap-3">
+        <p className="text-creme-suave/70 text-xs text-center">
+          Sua carta completa revela o padrão que atravessa todas as suas
+          respostas — com as suas próprias palavras.
+        </p>
         <button
           onClick={() => router.push(`/checkout?session=${sessionId}`)}
-          className="rounded-full bg-roxo px-6 py-2.5 text-fundo font-semibold text-sm"
+          className="w-full rounded-full bg-roxo py-3 text-fundo font-semibold text-sm"
         >
-          Desbloquear por R$ 9,90
+          Ler minha carta completa · R$ 9,90
         </button>
       </div>
-    </div>
+    </section>
+  );
+}
+
+function CartaCompleta({ carta }: { carta: string }) {
+  return (
+    <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5">
+      <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
+        Carta 1 · Bússola
+      </p>
+      <p className="text-creme/90 text-sm leading-relaxed whitespace-pre-line">
+        {carta}
+      </p>
+    </section>
   );
 }
 
@@ -70,6 +96,8 @@ function ResultadoInterno() {
   const aguardandoPagamento = params.get("pago") === "1";
 
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [carta, setCarta] = useState<string | null>(null);
+  const [carregandoCarta, setCarregandoCarta] = useState(false);
   const [pago, setPago] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -89,7 +117,6 @@ function ResultadoInterno() {
         if (cancelado) return;
 
         if (!data.profile) {
-          // Tenta finalizar o quiz (gera o perfil) caso ainda não exista.
           try {
             const p = await finalizarQuiz(sessionId!);
             if (!cancelado) {
@@ -108,10 +135,9 @@ function ResultadoInterno() {
 
         setProfile(data.profile);
         setPago(data.paid);
+        setCarta(data.carta1);
         setCarregando(false);
 
-        // Se voltou do Mercado Pago mas o webhook ainda não confirmou,
-        // tenta novamente algumas vezes.
         if (aguardandoPagamento && !data.paid && tentativas < 5) {
           tentativas += 1;
           setTimeout(carregar, 2500);
@@ -129,6 +155,26 @@ function ResultadoInterno() {
       cancelado = true;
     };
   }, [sessionId, router, aguardandoPagamento]);
+
+  // Gera a carta automaticamente depois que o perfil estiver disponível.
+  useEffect(() => {
+    if (!sessionId || !profile || carta !== null || carregandoCarta) return;
+    let cancelado = false;
+    setCarregandoCarta(true);
+    obterCarta1(sessionId)
+      .then((c) => {
+        if (!cancelado) setCarta(c);
+      })
+      .catch(() => {
+        // Falha silenciosa — o usuário ainda vê o perfil; pode recarregar.
+      })
+      .finally(() => {
+        if (!cancelado) setCarregandoCarta(false);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [sessionId, profile, carta, carregandoCarta]);
 
   if (carregando) {
     return (
@@ -174,7 +220,7 @@ function ResultadoInterno() {
           <Dimensoes dimensoes={profile.dimensoes} />
         </section>
 
-        {/* Ativos (insight liberado) */}
+        {/* Ativos (sempre liberado) */}
         <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5">
           <h2 className="font-titulo text-lg text-creme mb-2">
             Suas forças invisíveis
@@ -184,62 +230,43 @@ function ResultadoInterno() {
           </p>
         </section>
 
-        {/* Conteúdo premium */}
-        {pago ? (
-          <>
-            <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5">
-              <h2 className="font-titulo text-lg text-creme mb-2">
-                O padrão que te limita
-              </h2>
-              <p className="text-creme-suave/90 text-sm leading-relaxed">
-                {profile.risco}
-              </p>
-            </section>
-
-            <section>
-              <h2 className="font-titulo text-xl text-creme mb-4">
-                Seus próximos 30 dias
-              </h2>
-              <ol className="flex flex-col gap-3">
-                {profile.acoes.map((acao, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-3 rounded-2xl border border-roxo/20 bg-fundo-suave p-4"
-                  >
-                    <span className="text-roxo font-titulo text-lg leading-none">
-                      {i + 1}
-                    </span>
-                    <span className="text-creme-suave/90 text-sm">{acao}</span>
-                  </li>
-                ))}
-              </ol>
-            </section>
-
-            <section className="text-center py-4">
-              <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
-                Uma pergunta para carregar
-              </p>
-              <p className="font-titulo text-xl text-creme leading-snug">
-                “{profile.pergunta_final_reflexao}”
-              </p>
-            </section>
-          </>
-        ) : (
-          <>
-            <p className="text-center text-creme-suave/80 text-sm">
-              Você viu o começo. O seu perfil completo revela o padrão que te
-              limita, suas 3 ações para os próximos 30 dias e a pergunta feita
-              sob medida para você.
+        {/* Carta 1 */}
+        {carregandoCarta && !carta ? (
+          <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5">
+            <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
+              Carta 1 · Bússola
             </p>
-            <Bloqueado sessionId={sessionId} titulo="O padrão que te limita" />
-            <Bloqueado sessionId={sessionId} titulo="Seus próximos 30 dias" />
-            <button
-              onClick={() => router.push(`/checkout?session=${sessionId}`)}
-              className="w-full rounded-full bg-roxo py-3.5 text-fundo font-semibold text-base"
-            >
-              Desbloquear meu perfil completo · R$ 9,90
-            </button>
-          </>
+            <p className="text-creme/40 text-sm pulse-soft">
+              Escrevendo sua carta…
+            </p>
+          </section>
+        ) : carta ? (
+          pago ? (
+            <CartaCompleta carta={carta} />
+          ) : (
+            <CartaCortada sessionId={sessionId} carta={carta} />
+          )
+        ) : (
+          /* carta falhou e não está carregando — mostra CTA de desbloqueio */
+          !pago && (
+            <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5 text-center">
+              <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
+                Carta 1 · Bússola
+              </p>
+              <p className="text-creme-suave/70 text-sm mb-4">
+                Sua carta pessoal revela o padrão invisível que atravessa todas
+                as suas respostas.
+              </p>
+              <button
+                onClick={() =>
+                  router.push(`/checkout?session=${sessionId}`)
+                }
+                className="rounded-full bg-roxo px-6 py-2.5 text-fundo font-semibold text-sm"
+              >
+                Desbloquear minha carta · R$ 9,90
+              </button>
+            </section>
+          )
         )}
 
         <div className="pt-4 pb-2 text-center">

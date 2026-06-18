@@ -12,6 +12,7 @@ model Session {
   ageGroup  String    @map("age_group")
   answers   Json      @default("[]")
   profile   Json?
+  carta1    String?   @map("carta_1")
   email     String?
   paidAt    DateTime? @map("paid_at")
   createdAt DateTime  @default(now()) @map("created_at")

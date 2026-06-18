@@ -8,7 +8,7 @@ import {
   listFaixaIds,
   totalPerguntas,
 } from "@/lib/questions";
-import { gerarPerguntaDinamica, gerarPerfil } from "@/lib/anthropic";
+import { gerarPerguntaDinamica, gerarPerfil, gerarCarta1 } from "@/lib/anthropic";
 import type { Answer, Profile } from "@/lib/types";
 
 function lerAnswers(value: unknown): Answer[] {
@@ -138,6 +138,7 @@ export interface ResultadoData {
   faixaId: string;
   paid: boolean;
   email: string | null;
+  carta1: string | null;
 }
 
 /** Dados para a página de resultado. */
@@ -149,7 +150,39 @@ export async function getResultado(sessionId: string): Promise<ResultadoData> {
     faixaId: session.ageGroup,
     paid: session.paidAt !== null,
     email: session.email,
+    carta1: session.carta1 ?? null,
   };
+}
+
+/**
+ * Gera e persiste a Carta 1 se ainda não existir. Idempotente.
+ * Retorna o texto da carta.
+ */
+export async function obterCarta1(sessionId: string): Promise<string> {
+  const session = await prisma.session.findUnique({ where: { id: sessionId } });
+  if (!session) throw new Error("Sessão não encontrada.");
+
+  if (session.carta1) return session.carta1;
+
+  const profile = session.profile as unknown as Profile | null;
+  if (!profile) throw new Error("Perfil ainda não gerado.");
+
+  const answers = lerAnswers(session.answers);
+
+  let carta: string;
+  try {
+    carta = await gerarCarta1(session.ageGroup, answers, profile);
+  } catch (err) {
+    console.error("[obterCarta1] Falha ao gerar carta:", err);
+    throw err;
+  }
+
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: { carta1: carta },
+  });
+
+  return carta;
 }
 
 /**
