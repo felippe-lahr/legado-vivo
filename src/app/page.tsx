@@ -18,7 +18,8 @@ export default function Home() {
           Sua história ainda está sendo escrita.
         </h1>
         <p className="text-creme-suave text-base mb-2">
-          São 12 perguntas. Não existem respostas certas — existem as suas.
+          São {meta.total_perguntas_por_faixa} perguntas. Não existem respostas
+          certas — existem as suas.
         </p>
         <p className="text-creme-suave/80 text-sm mb-10">
           Ao final, revelamos o que você carrega sem perceber: seus talentos

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createSession } from "./actions";
-import { emojiDoIcone } from "@/lib/icones";
+import { AvatarFaixa } from "./AvatarFaixa";
 
 interface FaixaItem {
   id: string;
@@ -51,9 +51,7 @@ export function FaixaSelector({ faixas }: { faixas: FaixaItem[] }) {
             className="text-left rounded-2xl border border-roxo/25 bg-fundo-suave px-5 py-4 transition active:scale-[0.99] hover:border-roxo/60 disabled:opacity-60"
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl" aria-hidden>
-                {emojiDoIcone(f.icone)}
-              </span>
+              <AvatarFaixa faixaId={f.id} className="h-11 w-11 shrink-0" />
               <div>
                 <p className="text-creme font-titulo text-lg leading-tight">
                   {formatarFaixa(f.id)}
