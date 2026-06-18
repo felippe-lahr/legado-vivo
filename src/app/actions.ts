@@ -193,6 +193,43 @@ export async function obterCarta1(sessionId: string): Promise<string> {
 export async function excluirDados(sessionId: string): Promise<void> {
   await prisma.session.deleteMany({ where: { id: sessionId } });
 }
+
+export interface RespostaBonusState {
+  pergunta: string | null;
+  jaRespondeu: boolean;
+  pago: boolean;
+}
+
+/** Dados da página de resposta do bônus (dia 7/10). */
+export async function getRespostaBonusState(
+  sessionId: string,
+): Promise<RespostaBonusState> {
+  const session = await prisma.session.findUnique({ where: { id: sessionId } });
+  if (!session) throw new Error("Sessão não encontrada.");
+  return {
+    pergunta: session.perguntaPendente ?? null,
+    jaRespondeu: session.respostaBonus !== null,
+    pago: session.paidAt !== null,
+  };
+}
+
+/** Salva a resposta do bônus (a pessoa responde à pergunta da Carta 1). */
+export async function salvarRespostaBonus(
+  sessionId: string,
+  texto: string,
+): Promise<void> {
+  const limpo = texto.trim();
+  if (!limpo) throw new Error("Resposta vazia.");
+  const session = await prisma.session.findUnique({ where: { id: sessionId } });
+  if (!session) throw new Error("Sessão não encontrada.");
+  if (!session.perguntaPendente) {
+    throw new Error("Não há pergunta pendente para esta sessão.");
+  }
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: { respostaBonus: limpo },
+  });
+}
 export async function iniciarCheckout(
   sessionId: string,
   email: string,

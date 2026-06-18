@@ -221,3 +221,60 @@ export async function gerarCarta1(
 
   return textOf(message);
 }
+
+/**
+ * Gera a Carta 2 ("A Carta de Volta") — reação genuína à resposta que a pessoa
+ * deu, 10 dias depois, à pergunta final da Carta 1. 150-250 palavras.
+ */
+export async function gerarCarta2(
+  faixaId: string,
+  perguntaFinal: string,
+  respostaBonus: string,
+  carta1: string,
+): Promise<string> {
+  const faixa: Faixa | undefined = getFaixa(faixaId);
+  if (!faixa) throw new Error(`Faixa inválida: ${faixaId}`);
+
+  const system = systemPrompt.base;
+
+  const userContent = [
+    `Há 10 dias você escreveu uma carta para esta pessoa, terminando com esta pergunta: "${perguntaFinal}"`,
+    ``,
+    `Ela esperou, pensou, e agora respondeu:`,
+    `"${respostaBonus}"`,
+    ``,
+    `Para sua referência, esta foi a Carta 1 que você escreveu:`,
+    `"""`,
+    carta1,
+    `"""`,
+    ``,
+    `Escreva a segunda carta — uma reação genuína a essa resposta, não uma repetição da fórmula da primeira carta.`,
+    ``,
+    `REGRAS:`,
+    `- Comece reconhecendo especificamente o que ela respondeu — cite a resposta dela quase na íntegra se for curta, ou o trecho mais importante se for longa.`,
+    `- Se a resposta dela confirma o padrão da Carta 1: aprofunde, mostre uma camada nova que só essa confirmação revela.`,
+    `- Se a resposta dela contradiz ou surpreende o padrão da Carta 1: seja honesto sobre isso. Diga algo como "isso não é o que eu esperava — e isso me diz algo ainda mais interessante sobre você".`,
+    `- NÃO repita a estrutura da primeira carta. Esta é uma resposta a uma resposta, não um novo diagnóstico.`,
+    `- Termine com algo que sirva de bússola para os próximos meses, não para os próximos 10 dias — amplie o horizonte de tempo.`,
+    ``,
+    `TOM: mesmo da Carta 1, mas mais próximo — vocês já "se conhecem" há 10 dias. Pode ser mais direto, menos cauteloso.`,
+    `Extensão: 150-250 palavras. Texto corrido, sem markdown. Não assine.`,
+    ``,
+    `Escreva a carta agora. APENAS o texto da carta, sem nenhuma outra palavra.`,
+  ].join("\n");
+
+  let message: Anthropic.Message;
+  try {
+    message = await getClient().messages.create({
+      model: MODEL,
+      max_tokens: 900,
+      system,
+      messages: [{ role: "user", content: userContent }],
+    });
+  } catch (err) {
+    console.error("[gerarCarta2] Falha na Claude API:", err);
+    throw err;
+  }
+
+  return textOf(message);
+}

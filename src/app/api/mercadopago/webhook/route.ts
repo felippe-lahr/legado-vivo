@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { consultarPagamento } from "@/lib/mercadopago";
+import { processarPagamentoConfirmado } from "@/lib/bonus";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,9 @@ export async function POST(req: NextRequest) {
         where: { id: sessionId, paidAt: null },
         data: { paidAt: new Date() },
       });
+      // Gera a Carta 1 (se necessário), registra a pergunta pendente do bônus
+      // e envia a Carta 1 por e-mail. Idempotente.
+      await processarPagamentoConfirmado(sessionId);
     }
 
     return NextResponse.json({ received: true });

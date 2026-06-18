@@ -8,14 +8,22 @@ datasource db {
 }
 
 model Session {
-  id        String    @id @default(uuid()) @db.Uuid
-  ageGroup  String    @map("age_group")
-  answers   Json      @default("[]")
-  profile   Json?
-  carta1    String?   @map("carta_1")
-  email     String?
-  paidAt    DateTime? @map("paid_at")
-  createdAt DateTime  @default(now()) @map("created_at")
+  id              String    @id @default(uuid()) @db.Uuid
+  ageGroup        String    @map("age_group")
+  answers         Json      @default("[]")
+  profile         Json?
+  carta1          String?   @map("carta_1")
+  email           String?
+  paidAt          DateTime? @map("paid_at")
+  // Bônus de 10 dias
+  perguntaPendente String?  @map("pergunta_pendente")
+  respostaBonus    String?  @map("resposta_bonus")
+  carta2           String?  @map("carta_2")
+  carta1EnviadaEm  DateTime? @map("carta_1_enviada_em")
+  lembreteDia7Em   DateTime? @map("lembrete_dia7_em")
+  lembreteFinalEm  DateTime? @map("lembrete_final_em")
+  carta2EnviadaEm  DateTime? @map("carta_2_enviada_em")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   @@map("sessions")
 }
