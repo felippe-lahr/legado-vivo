@@ -31,7 +31,7 @@ export async function criarPreferencia(
         items: [
           {
             id: `legado-vivo-${sessionId}`,
-            title: "Legado Vivo — Seu perfil completo",
+            title: "Meu Legado Vivo — Seu perfil completo",
             description: "Diagnóstico completo: arquétipo, dimensões e ações.",
             quantity: 1,
             unit_price: PRECO,

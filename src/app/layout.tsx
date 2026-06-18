@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Legado Vivo",
+  title: "Meu Legado Vivo",
   description:
     "Uma conversa profunda sobre quem você é, o que te move e o legado que você está construindo.",
 };
