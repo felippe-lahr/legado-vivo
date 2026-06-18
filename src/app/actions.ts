@@ -153,9 +153,13 @@ export async function getResultado(sessionId: string): Promise<ResultadoData> {
 }
 
 /**
- * Inicia o checkout: salva o e-mail e cria a preferência de pagamento no
- * Mercado Pago (R$ 9,90). Retorna a URL de checkout.
+ * Exclusão real e definitiva da sessão (todas as respostas, perfil e dados).
+ * Cumpre a promessa "você pode apagar tudo" — remove a linha do banco, não
+ * apenas oculta. Idempotente: não falha se a sessão já não existir.
  */
+export async function excluirDados(sessionId: string): Promise<void> {
+  await prisma.session.deleteMany({ where: { id: sessionId } });
+}
 export async function iniciarCheckout(
   sessionId: string,
   email: string,

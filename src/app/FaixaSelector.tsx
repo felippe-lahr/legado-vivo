@@ -30,7 +30,7 @@ export function FaixaSelector({ faixas }: { faixas: FaixaItem[] }) {
     startTransition(async () => {
       try {
         const sessionId = await createSession(id);
-        router.push(`/quiz?session=${sessionId}`);
+        router.push(`/compromisso?session=${sessionId}`);
       } catch {
         setErro("Não foi possível iniciar agora. Tente novamente.");
         setSelecionada(null);

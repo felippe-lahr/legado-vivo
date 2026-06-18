@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { emojiDoIcone } from "@/lib/icones";
 import type { Profile } from "@/lib/types";
 import { getResultado, finalizarQuiz } from "../actions";
+import { ApagarDados } from "../ApagarDados";
 
 function Dimensoes({ dimensoes }: { dimensoes: Record<string, number> }) {
   const entradas = Object.entries(dimensoes);
@@ -240,6 +241,10 @@ function ResultadoInterno() {
             </button>
           </>
         )}
+
+        <div className="pt-4 pb-2 text-center">
+          <ApagarDados sessionId={sessionId} />
+        </div>
       </div>
     </main>
   );

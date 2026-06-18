@@ -6,6 +6,7 @@ import { getFaixa, flattenPerguntas } from "@/lib/questions";
 import { emojiDoIcone } from "@/lib/icones";
 import type { Bloco, Faixa, PerguntaComBloco } from "@/lib/types";
 import { getSessionState, obterPergunta, salvarResposta } from "../actions";
+import { ApagarDados } from "../ApagarDados";
 
 function ProgressoBlocos({
   faixa,
@@ -280,6 +281,12 @@ function QuizInterno() {
           </div>
         )}
       </div>
+
+      {sessionId && (
+        <div className="pt-6 text-center">
+          <ApagarDados sessionId={sessionId} />
+        </div>
+      )}
     </main>
   );
 }
