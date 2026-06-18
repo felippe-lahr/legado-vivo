@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { emojiDoIcone } from "@/lib/icones";
 import type { Profile } from "@/lib/types";
@@ -98,9 +98,13 @@ function ResultadoInterno() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [carta, setCarta] = useState<string | null>(null);
   const [carregandoCarta, setCarregandoCarta] = useState(false);
+  const [falhaCarta, setFalhaCarta] = useState(false);
   const [pago, setPago] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+
+  // Garante que a geração da carta dispare uma única vez (sem auto-cancelar).
+  const cartaSolicitada = useRef(false);
 
   useEffect(() => {
     if (!sessionId) {
@@ -157,24 +161,30 @@ function ResultadoInterno() {
   }, [sessionId, router, aguardandoPagamento]);
 
   // Gera a carta automaticamente depois que o perfil estiver disponível.
+  // Dispara só uma vez (guarda por ref) e NÃO se auto-cancela: a requisição
+  // da IA pode levar dezenas de segundos e não deve ser abortada por re-render.
   useEffect(() => {
-    if (!sessionId || !profile || carta !== null || carregandoCarta) return;
-    let cancelado = false;
+    if (!sessionId || !profile || carta !== null || cartaSolicitada.current) {
+      return;
+    }
+    cartaSolicitada.current = true;
     setCarregandoCarta(true);
+    setFalhaCarta(false);
     obterCarta1(sessionId)
-      .then((c) => {
-        if (!cancelado) setCarta(c);
+      .then((c) => setCarta(c))
+      .catch((err) => {
+        console.error("[resultado] Falha ao gerar a carta:", err);
+        setFalhaCarta(true);
       })
-      .catch(() => {
-        // Falha silenciosa — o usuário ainda vê o perfil; pode recarregar.
-      })
-      .finally(() => {
-        if (!cancelado) setCarregandoCarta(false);
-      });
-    return () => {
-      cancelado = true;
-    };
-  }, [sessionId, profile, carta, carregandoCarta]);
+      .finally(() => setCarregandoCarta(false));
+  }, [sessionId, profile, carta]);
+
+  function tentarCartaNovamente() {
+    cartaSolicitada.current = false;
+    setFalhaCarta(false);
+    // Força o efeito a rodar de novo zerando o estado de carta.
+    setCarta(null);
+  }
 
   if (carregando) {
     return (
@@ -246,28 +256,23 @@ function ResultadoInterno() {
           ) : (
             <CartaCortada sessionId={sessionId} carta={carta} />
           )
-        ) : (
-          /* carta falhou e não está carregando — mostra CTA de desbloqueio */
-          !pago && (
-            <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5 text-center">
-              <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
-                Carta 1 · Bússola
-              </p>
-              <p className="text-creme-suave/70 text-sm mb-4">
-                Sua carta pessoal revela o padrão invisível que atravessa todas
-                as suas respostas.
-              </p>
-              <button
-                onClick={() =>
-                  router.push(`/checkout?session=${sessionId}`)
-                }
-                className="rounded-full bg-roxo px-6 py-2.5 text-fundo font-semibold text-sm"
-              >
-                Desbloquear minha carta · R$ 9,90
-              </button>
-            </section>
-          )
-        )}
+        ) : falhaCarta ? (
+          <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5 text-center">
+            <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
+              Carta 1 · Bússola
+            </p>
+            <p className="text-creme-suave/70 text-sm mb-4">
+              Não conseguimos escrever sua carta agora. Foi um soluço
+              momentâneo.
+            </p>
+            <button
+              onClick={tentarCartaNovamente}
+              className="rounded-full bg-roxo px-6 py-2.5 text-fundo font-semibold text-sm"
+            >
+              Tentar novamente
+            </button>
+          </section>
+        ) : null}
 
         <div className="pt-4 pb-2 text-center">
           <ApagarDados sessionId={sessionId} />
