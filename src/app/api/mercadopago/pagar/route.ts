@@ -58,24 +58,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, ...resultado });
   } catch (err) {
     console.error("[pagar] Falha ao criar pagamento:", err);
-    // Detalhe completo para diagnóstico (aparece no console do navegador).
-    const e = (err ?? {}) as {
-      message?: string;
-      cause?: unknown;
-      status?: number;
-      error?: unknown;
-    };
-    const detalhe = {
-      message: e.message,
-      cause: e.cause,
-      status: e.status,
-      error: e.error,
-    };
     return NextResponse.json(
       {
         ok: false,
         erro: "Não foi possível processar o pagamento.",
-        detalhe,
       },
       { status: 500 },
     );

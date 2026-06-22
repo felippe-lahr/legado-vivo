@@ -153,8 +153,6 @@ function CheckoutInterno() {
     }
     brickCriado.current = true;
 
-    console.log("[checkout] public key em uso:", MP_PUBLIC_KEY);
-
     const mp = new window.MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
     const bricks = mp.bricks();
 
@@ -191,7 +189,6 @@ function CheckoutInterno() {
             })
               .then((res) => res.json())
               .then((data) => {
-                console.log("[checkout] resposta do pagamento:", data);
                 if (!data.ok) {
                   throw new Error(data.erro || "Falha no pagamento.");
                 }
@@ -402,9 +399,6 @@ function CheckoutInterno() {
             </p>
             <div id="payment_brick_container" />
             {erro && <p className="text-red-300 text-sm mt-3">{erro}</p>}
-            <p className="text-creme-suave/30 text-[10px] mt-3 break-all">
-              debug pk: {MP_PUBLIC_KEY ?? "(vazia)"}
-            </p>
           </>
         )}
 
