@@ -153,6 +153,8 @@ function CheckoutInterno() {
     }
     brickCriado.current = true;
 
+    console.log("[checkout] public key em uso:", MP_PUBLIC_KEY);
+
     const mp = new window.MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
     const bricks = mp.bricks();
 
