@@ -4,6 +4,7 @@ import { criarPagamento } from "@/lib/mercadopago";
 import { processarPagamentoConfirmado } from "@/lib/bonus";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * Cria o pagamento do Checkout Transparente (Payment Brick). Recebe o
