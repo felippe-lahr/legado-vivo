@@ -306,3 +306,17 @@ export async function criarSessaoSemente(faixaId: string): Promise<string> {
 
   return session.id;
 }
+
+/**
+ * Marca uma sessão como paga SEM passar pelo pagamento — apenas para teste.
+ * Protegido por ENABLE_TEST_SEED. Permite visualizar a carta completa.
+ */
+export async function marcarPagaTeste(sessionId: string): Promise<void> {
+  if (process.env.ENABLE_TEST_SEED !== "1") {
+    throw new Error("Modo de teste desabilitado.");
+  }
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: { paidAt: new Date() },
+  });
+}

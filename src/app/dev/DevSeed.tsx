@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { criarSessaoSemente } from "../actions";
+import { criarSessaoSemente, marcarPagaTeste } from "../actions";
 
 const FAIXAS = [
   { id: "50-60", label: "50 a 60 anos" },
@@ -10,7 +10,7 @@ const FAIXAS = [
   { id: "70+", label: "70 anos ou mais" },
 ];
 
-type Destino = "resultado" | "checkout";
+type Destino = "resultado" | "checkout" | "carta-paga";
 
 export function DevSeed() {
   const router = useRouter();
@@ -24,6 +24,11 @@ export function DevSeed() {
     startTransition(async () => {
       try {
         const sessionId = await criarSessaoSemente(faixaId);
+        if (destino === "carta-paga") {
+          await marcarPagaTeste(sessionId);
+          router.push(`/resultado?session=${sessionId}`);
+          return;
+        }
         router.push(`/${destino}?session=${sessionId}`);
       } catch {
         setErro("Falha ao gerar a sessão de teste.");
@@ -58,6 +63,16 @@ export function DevSeed() {
               {ativo === `${f.id}-checkout` ? "Gerando…" : "→ Checkout"}
             </button>
           </div>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => gerar(f.id, "carta-paga")}
+            className="mt-2 w-full rounded-full border border-roxo/30 py-2.5 text-creme-suave/80 font-semibold text-sm transition active:scale-[0.99] disabled:opacity-40"
+          >
+            {ativo === `${f.id}-carta-paga`
+              ? "Gerando…"
+              : "→ Carta completa (paga, teste)"}
+          </button>
         </div>
       ))}
       {erro && <p className="text-red-300 text-sm">{erro}</p>}
