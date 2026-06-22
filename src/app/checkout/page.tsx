@@ -70,15 +70,11 @@ function SelosConfianca() {
         segurança PCI. Não armazenamos os dados do seu cartão.
       </p>
       <div className="flex items-center justify-center gap-3 flex-wrap">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-fundo px-3 py-1.5 border border-roxo/15">
-          <span className="text-creme-suave/70 text-[11px]">Processado por</span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/6.6.135/mercadopago/logo__large.png"
-            alt="Mercado Pago"
-            width={78}
-            height={20}
-          />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5">
+          <span className="text-[#666] text-[11px]">Processado por</span>
+          <span className="text-[#00a3e0] text-[12px] font-extrabold tracking-tight">
+            Mercado Pago
+          </span>
         </span>
         <span className="inline-flex items-center gap-1 rounded-full bg-fundo px-3 py-1.5 border border-roxo/15 text-creme-suave/60 text-[11px] font-semibold">
           SSL
