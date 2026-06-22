@@ -78,11 +78,11 @@ function CartaCortada({
 
 function CartaCompleta({ carta }: { carta: string }) {
   return (
-    <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-5">
-      <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
+    <section className="rounded-2xl border border-roxo/25 bg-fundo-suave p-6">
+      <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-4">
         Carta 1 · Bússola
       </p>
-      <p className="text-creme/90 text-sm leading-relaxed whitespace-pre-line">
+      <p className="text-creme/90 text-base leading-7 whitespace-pre-line">
         {carta}
       </p>
     </section>

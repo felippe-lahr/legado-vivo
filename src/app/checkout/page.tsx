@@ -337,7 +337,6 @@ function CheckoutInterno() {
         <ul className="flex flex-col gap-2.5 mb-7">
           {[
             "O padrão que silenciosamente te limita",
-            "3 ações concretas para os próximos 30 dias",
             "A pergunta feita sob medida para você",
             "Acesso permanente ao seu perfil",
           ].map((item) => (
