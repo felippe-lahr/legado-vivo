@@ -223,6 +223,30 @@ function CheckoutInterno() {
       });
   }, [etapa, sdkPronto, email, sessionId, router]);
 
+  // Esconde o selo "Parcelamento disponível" do Brick (pagamento único).
+  // Observa o DOM porque o Brick monta de forma assíncrona.
+  useEffect(() => {
+    if (etapa !== "pagamento") return;
+    const container = document.getElementById("payment_brick_container");
+    if (!container) return;
+
+    const esconder = () => {
+      container.querySelectorAll("*").forEach((el) => {
+        if (
+          el.children.length === 0 &&
+          el.textContent?.trim().toLowerCase().startsWith("parcelamento")
+        ) {
+          (el as HTMLElement).style.display = "none";
+        }
+      });
+    };
+
+    esconder();
+    const obs = new MutationObserver(esconder);
+    obs.observe(container, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, [etapa]);
+
   if (!sessionId) {
     return (
       <main className="app-shell justify-center text-center">
