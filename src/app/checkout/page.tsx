@@ -331,12 +331,12 @@ function CheckoutInterno() {
           Sua carta já está escrita
         </p>
         <h1 className="text-3xl text-creme mb-4">
-          A carta que ninguém nunca te escreveu.
+          Tem uma coisa sobre você que você ainda não leu.
         </h1>
         <p className="text-creme-suave/85 text-sm leading-relaxed mb-6">
-          A partir das suas próprias respostas, escrevemos uma carta que revela
-          o fio invisível que atravessa tudo o que você contou — com as suas
-          frases, citadas de volta para você. Está pronta. Falta só abrir.
+          Nas suas respostas existe um padrão que você nunca viu de fora.
+          Escrevemos ele numa carta — com as suas próprias frases de volta para
+          você. Está pronta. Falta só abrir.
         </p>
 
         <ul className="flex flex-col gap-2.5 mb-7">
