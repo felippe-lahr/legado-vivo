@@ -62,8 +62,9 @@ function CartaCortada({
       </div>
       <div className="mt-5 flex flex-col gap-3">
         <p className="text-creme-suave/70 text-xs text-center">
-          Sua carta completa revela o padrão que atravessa todas as suas
-          respostas — com as suas próprias palavras.
+          O resto da carta nomeia algo que você sente mas nunca colocou em
+          palavras — com as suas próprias frases — e termina com uma pergunta
+          que é só sua.
         </p>
         <button
           onClick={() => router.push(`/checkout?session=${sessionId}`)}

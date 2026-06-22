@@ -9,6 +9,11 @@ const CARTA_BLACKLIST =
 // Pode ser sobrescrito por variável de ambiente (sem precisar mexer no código).
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
+// Modelo dedicado à Carta 1 (a peça paga). Por padrão usa o mesmo MODEL,
+// mas pode ser elevado (ex.: claude-opus-4-8) via env só para esta geração,
+// sem encarecer as chamadas de alto volume (perguntas e perfil).
+const CARTA_MODEL = process.env.ANTHROPIC_CARTA_MODEL || MODEL;
+
 let client: Anthropic | null = null;
 function getClient(): Anthropic {
   if (!client) {
@@ -180,20 +185,27 @@ export async function gerarCarta1(
   const system = systemPrompt.base;
 
   const userContent = [
-    `Você vai escrever a "Carta 1" para esta pessoa — uma carta pessoal que só poderia existir para ela.`,
+    `Você vai escrever a "Carta 1" para esta pessoa — uma carta tão específica que seria impossível ela existir para qualquer outra pessoa no mundo. Não é um relatório, não é um diagnóstico: é uma carta que faz a pessoa sentir que finalmente foi vista por inteiro.`,
     ``,
     `Perfil revelado: Arquétipo "${profile.arquetipo}" — ${profile.frase}`,
     `Padrão identificado: ${profile.risco}`,
     ``,
-    `Siga a estrutura Bússola, em 3 movimentos:`,
-    `1. ABERTURA (1 parágrafo): Uma observação específica e única sobre algo que a pessoa revelou. Não genérica. Começa com "Você".`,
-    `2. PADRÃO (1–2 parágrafos): O fio invisível que atravessa as respostas — o padrão que conecta escolhas, silencios e talentos. Inclua entre 4 e 6 citações literais das respostas entre aspas duplas.`,
-    `3. CONVITE (1 parágrafo): Uma pergunta ou frase final que a pessoa vai carregar. Não é conselho nem instrução — é um convite a olhar de um ângulo diferente.`,
+    `O QUE TORNA ESTA CARTA INESQUECÍVEL — faça os quatro, sem anunciá-los:`,
+    `1. O NÃO-DITO: diga em voz alta uma coisa que a pessoa sente mas nunca conseguiu formular em palavras — algo que vive nas ENTRELINHAS das respostas, não escrito nelas. É o momento "como você sabia disso?".`,
+    `2. A TENSÃO: aponte uma contradição viva entre duas coisas que ela disse — não como defeito, mas como o lugar exato onde mora a verdade dela.`,
+    `3. A IMAGEM: crie UMA única imagem ou metáfora original, tirada do vocabulário e do mundo da própria pessoa (jamais clichê de autoajuda), e use-a como fio que costura a carta do começo ao fim.`,
+    `4. A FRASE QUE FICA: a última linha precisa ser uma frase que a pessoa releria e talvez anotasse — curta, em aberto, só dela.`,
+    ``,
+    `ESTRUTURA (parágrafos corridos, sem títulos):`,
+    `- Abertura: comece com "Você" e uma observação tão precisa que ela sinta um arrepio de reconhecimento. Nada genérico.`,
+    `- Desenvolvimento (2–3 parágrafos): revele o fio invisível que atravessa as respostas, trazendo à tona o não-dito e a tensão. Inclua entre 4 e 6 citações literais das respostas, entre aspas duplas, integradas ao texto.`,
+    `- Convite: uma pergunta ou frase final que ela vai carregar — não conselho, não instrução, um convite a se olhar de um ângulo novo.`,
     ``,
     `REGRAS ABSOLUTAS:`,
-    `- 250 a 350 palavras no total`,
-    `- Entre 4 e 6 citações literais entre aspas duplas`,
-    `- Tom: cálido, direto, sem condescendência`,
+    `- 320 a 420 palavras no total`,
+    `- Entre 4 e 6 citações literais entre aspas duplas, sempre dentro de parágrafos (nunca em lista)`,
+    `- Tom: cálido, adulto, direto. Sem condescendência, sem bajulação, sem terapês.`,
+    `- Não invente fatos que a pessoa não disse; trabalhe só com o que está nas respostas e em suas entrelinhas.`,
     `- PROIBIDO usar estas palavras: ${CARTA_BLACKLIST}`,
     `- Sem listas, títulos, subtítulos ou markdown — apenas parágrafos corridos`,
     `- Não assine a carta`,
@@ -209,8 +221,8 @@ export async function gerarCarta1(
   let message: Anthropic.Message;
   try {
     message = await getClient().messages.create({
-      model: MODEL,
-      max_tokens: 1200,
+      model: CARTA_MODEL,
+      max_tokens: 1500,
       system,
       messages: [{ role: "user", content: userContent }],
     });

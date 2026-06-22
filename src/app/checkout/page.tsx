@@ -328,17 +328,23 @@ function CheckoutInterno() {
       />
       <div className="fade-in">
         <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
-          Perfil completo
+          Sua carta já está escrita
         </p>
-        <h1 className="text-3xl text-creme mb-5">
-          Desbloqueie tudo que você revelou.
+        <h1 className="text-3xl text-creme mb-4">
+          A carta que ninguém nunca te escreveu.
         </h1>
+        <p className="text-creme-suave/85 text-sm leading-relaxed mb-6">
+          A partir das suas próprias respostas, escrevemos uma carta que revela
+          o fio invisível que atravessa tudo o que você contou — com as suas
+          frases, citadas de volta para você. Está pronta. Falta só abrir.
+        </p>
 
         <ul className="flex flex-col gap-2.5 mb-7">
           {[
-            "O padrão que silenciosamente te limita",
-            "A pergunta feita sob medida para você",
-            "Acesso permanente ao seu perfil",
+            "O padrão invisível que conecta tudo o que você respondeu",
+            "As suas próprias palavras, relidas de um jeito que você nunca tinha visto",
+            "Uma pergunta final, feita só para você, para carregar",
+            "A carta enviada no seu e-mail, para guardar e reler quando quiser",
           ].map((item) => (
             <li key={item} className="flex items-start gap-2.5 text-sm">
               <span className="text-roxo mt-0.5">✦</span>
@@ -353,14 +359,14 @@ function CheckoutInterno() {
             <span className="font-titulo text-2xl text-creme">R$ 9,90</span>
           </div>
           <p className="text-creme-suave/50 text-xs">
-            Pagamento único. Cartão ou PIX.
+            Pagamento único, menos que um café. Cartão ou PIX, leitura na hora.
           </p>
         </div>
 
         {etapa === "email" && (
           <>
             <label className="block text-creme-suave/80 text-sm mb-2">
-              Para onde enviamos seu acesso?
+              Para onde enviamos sua carta?
             </label>
             <input
               type="email"
@@ -385,7 +391,7 @@ function CheckoutInterno() {
         {etapa === "pagamento" && (
           <>
             <p className="text-creme-suave/70 text-xs mb-3">
-              Enviaremos o acesso para <strong>{email.trim()}</strong>.{" "}
+              Enviaremos sua carta para <strong>{email.trim()}</strong>.{" "}
               <button
                 onClick={() => {
                   setEtapa("email");
