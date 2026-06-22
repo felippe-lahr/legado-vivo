@@ -57,12 +57,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, ...resultado });
   } catch (err) {
     console.error("[pagar] Falha ao criar pagamento:", err);
-    // Detalhe temporário para diagnóstico (aparece no console do navegador).
-    const detalhe =
-      err && typeof err === "object"
-        ? (err as { message?: string; cause?: unknown }).message ??
-          JSON.stringify(err, Object.getOwnPropertyNames(err))
-        : String(err);
+    // Detalhe completo para diagnóstico (aparece no console do navegador).
+    const e = (err ?? {}) as {
+      message?: string;
+      cause?: unknown;
+      status?: number;
+      error?: unknown;
+    };
+    const detalhe = {
+      message: e.message,
+      cause: e.cause,
+      status: e.status,
+      error: e.error,
+    };
     return NextResponse.json(
       {
         ok: false,
