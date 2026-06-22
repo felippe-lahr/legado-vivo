@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import {
   getFaixa,
   getPerguntaByNumero,
+  flattenPerguntas,
   listFaixaIds,
   totalPerguntas,
 } from "@/lib/questions";
@@ -261,4 +262,58 @@ export async function iniciarCheckout(
     console.error("[iniciarCheckout] Falha ao criar preferência:", err);
     throw err;
   }
+}
+
+// ─── Modo de teste (semente) ──────────────────────────────────────
+// Habilitado apenas quando ENABLE_TEST_SEED === "1". Cria uma sessão já
+// totalmente respondida e com perfil gerado, para testar o fluxo de
+// resultado/pagamento sem responder o quiz inteiro a cada vez.
+
+/** Verdadeiro se o modo de teste (seed) está habilitado no ambiente. */
+export async function testSeedHabilitado(): Promise<boolean> {
+  return process.env.ENABLE_TEST_SEED === "1";
+}
+
+const RESPOSTAS_SEMENTE = [
+  "Quando penso nisso, lembro de momentos em que precisei recomeçar do zero e descobri uma força que eu não sabia que tinha.",
+  "Sempre fui movido por cuidar das pessoas ao meu redor, mesmo quando isso significou deixar meus próprios sonhos em segundo plano.",
+  "Tenho orgulho do que construí, mas confesso que às vezes me pergunto se segui o caminho que eu realmente queria.",
+  "O que mais me marca é a sensação de que ainda tenho muito a oferecer e a viver, independente da idade.",
+  "Aprendi que o tempo é o bem mais precioso, e hoje tento gastá-lo com quem e com o que importa de verdade.",
+  "Há uma parte de mim que quer deixar algo que dure além da minha presença — uma marca, um exemplo.",
+  "Já carreguei muitas culpas, mas estou aprendendo a me perdoar e a olhar para trás com mais gentileza.",
+  "Minha maior alegria sempre veio das relações simples e verdadeiras, não das conquistas materiais.",
+];
+
+/**
+ * Cria uma sessão de teste com todas as respostas preenchidas e o perfil já
+ * gerado, devolvendo o id. Protegido por ENABLE_TEST_SEED.
+ */
+export async function criarSessaoSemente(faixaId: string): Promise<string> {
+  if (process.env.ENABLE_TEST_SEED !== "1") {
+    throw new Error("Modo de teste desabilitado.");
+  }
+  const faixa = getFaixa(faixaId);
+  if (!faixa) throw new Error(`Faixa etária inválida: ${faixaId}`);
+
+  const session = await prisma.session.create({
+    data: { ageGroup: faixaId, answers: [] },
+  });
+
+  const answers: Answer[] = flattenPerguntas(faixa).map((p, i) => ({
+    numero: p.numero,
+    perguntaId: p.id,
+    texto: p.texto ?? p.subtexto ?? "Pergunta personalizada de teste",
+    resposta: RESPOSTAS_SEMENTE[i % RESPOSTAS_SEMENTE.length],
+  }));
+
+  await prisma.session.update({
+    where: { id: session.id },
+    data: { answers: answers as unknown as Prisma.InputJsonValue },
+  });
+
+  // Gera o perfil real (uma chamada à IA) para o fluxo ficar fiel.
+  await finalizarQuiz(session.id);
+
+  return session.id;
 }
