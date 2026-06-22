@@ -402,6 +402,9 @@ function CheckoutInterno() {
             </p>
             <div id="payment_brick_container" />
             {erro && <p className="text-red-300 text-sm mt-3">{erro}</p>}
+            <p className="text-creme-suave/30 text-[10px] mt-3 break-all">
+              debug pk: {MP_PUBLIC_KEY ?? "(vazia)"}
+            </p>
           </>
         )}
 
