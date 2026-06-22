@@ -35,6 +35,32 @@ interface PixData {
   ticketUrl?: string;
 }
 
+/** Traduz os `status_detail` de recusa do Mercado Pago em mensagens claras. */
+function mensagemRecusa(detail?: string): string {
+  switch (detail) {
+    case "cc_rejected_insufficient_amount":
+      return "Saldo/limite insuficiente no cartão.";
+    case "cc_rejected_bad_filled_card_number":
+      return "Número do cartão incorreto. Confira e tente de novo.";
+    case "cc_rejected_bad_filled_date":
+      return "Data de validade incorreta.";
+    case "cc_rejected_bad_filled_security_code":
+      return "Código de segurança (CVV) incorreto.";
+    case "cc_rejected_bad_filled_other":
+      return "Algum dado do cartão está incorreto. Confira e tente de novo.";
+    case "cc_rejected_call_for_authorize":
+      return "Seu banco precisa autorizar o pagamento. Entre em contato com ele.";
+    case "cc_rejected_card_disabled":
+      return "Cartão desabilitado. Fale com seu banco.";
+    case "cc_rejected_high_risk":
+      return "Pagamento recusado por segurança. Tente outro cartão ou use PIX.";
+    case "cc_rejected_max_attempts":
+      return "Muitas tentativas. Tente outro cartão ou use PIX.";
+    default:
+      return "Pagamento recusado. Tente outro cartão ou use PIX.";
+  }
+}
+
 function SelosConfianca() {
   return (
     <div className="mt-6 border-t border-roxo/15 pt-5">
@@ -151,6 +177,7 @@ function CheckoutInterno() {
             console.error("[brick] erro:", error);
           },
           onSubmit: ({ formData }: { formData: Record<string, unknown> }) => {
+            setErro(null);
             return fetch("/api/mercadopago/pagar", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -162,7 +189,10 @@ function CheckoutInterno() {
             })
               .then((res) => res.json())
               .then((data) => {
-                if (!data.ok) throw new Error(data.erro || "Falha no pagamento.");
+                console.log("[checkout] resposta do pagamento:", data);
+                if (!data.ok) {
+                  throw new Error(data.erro || "Falha no pagamento.");
+                }
                 if (data.status === "approved") {
                   router.push(`/resultado?session=${sessionId}&pago=1`);
                   return;
@@ -175,7 +205,14 @@ function CheckoutInterno() {
                   setPendente(true);
                   return;
                 }
-                throw new Error("Pagamento não aprovado.");
+                // Recusado: mostra o motivo para o usuário e re-habilita o form.
+                setErro(mensagemRecusa(data.statusDetail));
+                throw new Error(data.statusDetail || "Pagamento recusado.");
+              })
+              .catch((e) => {
+                console.error("[checkout] erro no pagamento:", e);
+                setErro((prev) => prev ?? "Não foi possível concluir o pagamento. Tente novamente.");
+                throw e;
               });
           },
         },
