@@ -230,10 +230,15 @@ export async function salvarRespostaBonus(
     data: { respostaBonus: limpo },
   });
 }
+export interface CheckoutData {
+  preferenceId: string;
+  initPoint: string;
+}
+
 export async function iniciarCheckout(
   sessionId: string,
   email: string,
-): Promise<string> {
+): Promise<CheckoutData> {
   const session = await prisma.session.findUnique({ where: { id: sessionId } });
   if (!session) throw new Error("Sessão não encontrada.");
 

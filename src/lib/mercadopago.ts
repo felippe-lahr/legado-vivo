@@ -15,13 +15,14 @@ function baseUrl(): string {
 }
 
 /**
- * Cria uma preferência de pagamento de R$ 9,90 para a sessão e retorna a URL
- * de checkout do Mercado Pago (init_point).
+ * Cria uma preferência de pagamento de R$ 9,90 para a sessão e retorna o id da
+ * preferência (para o modal/lightbox) e a URL de checkout (init_point, usada
+ * como fallback de redirect).
  */
 export async function criarPreferencia(
   sessionId: string,
   email: string,
-): Promise<string> {
+): Promise<{ preferenceId: string; initPoint: string }> {
   const preference = new Preference(getConfig());
 
   let result;
@@ -55,8 +56,10 @@ export async function criarPreferencia(
   }
 
   const url = result.init_point ?? result.sandbox_init_point;
-  if (!url) throw new Error("Mercado Pago não retornou a URL de checkout.");
-  return url;
+  if (!result.id || !url) {
+    throw new Error("Mercado Pago não retornou os dados de checkout.");
+  }
+  return { preferenceId: result.id, initPoint: url };
 }
 
 /**

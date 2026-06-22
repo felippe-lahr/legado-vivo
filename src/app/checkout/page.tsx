@@ -1,8 +1,26 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
 import { iniciarCheckout } from "../actions";
+
+const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY;
+
+interface MercadoPagoCheckout {
+  open: () => void;
+}
+interface MercadoPagoInstance {
+  checkout: (opts: { preference: { id: string } }) => MercadoPagoCheckout;
+}
+declare global {
+  interface Window {
+    MercadoPago?: new (
+      publicKey: string,
+      options?: { locale?: string },
+    ) => MercadoPagoInstance;
+  }
+}
 
 function CheckoutInterno() {
   const router = useRouter();
@@ -21,8 +39,23 @@ function CheckoutInterno() {
     setEnviando(true);
     setErro(null);
     try {
-      const url = await iniciarCheckout(sessionId, email);
-      window.location.href = url;
+      const { preferenceId, initPoint } = await iniciarCheckout(sessionId, email);
+
+      // Tenta abrir o checkout como modal (lightbox), mantendo o usuário no
+      // site. Se o SDK ou a chave pública não estiverem disponíveis, cai para
+      // o redirect tradicional — a venda nunca trava.
+      if (MP_PUBLIC_KEY && typeof window !== "undefined" && window.MercadoPago) {
+        try {
+          const mp = new window.MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
+          mp.checkout({ preference: { id: preferenceId } }).open();
+          setEnviando(false);
+          return;
+        } catch (e) {
+          console.error("[checkout] Falha ao abrir modal, usando redirect:", e);
+        }
+      }
+
+      window.location.href = initPoint;
     } catch {
       setErro(
         "Não foi possível abrir o pagamento agora. Verifique seu e-mail e tente novamente.",
@@ -44,6 +77,7 @@ function CheckoutInterno() {
 
   return (
     <main className="app-shell justify-center">
+      <Script src="https://sdk.mercadopago.com/js/v2" strategy="afterInteractive" />
       <div className="fade-in">
         <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
           Perfil completo
