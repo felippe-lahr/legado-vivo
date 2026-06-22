@@ -231,15 +231,14 @@ export async function salvarRespostaBonus(
     data: { respostaBonus: limpo },
   });
 }
-export interface CheckoutData {
-  preferenceId: string;
-  initPoint: string;
-}
-
-export async function iniciarCheckout(
+/**
+ * Salva o e-mail do comprador na sessão antes de iniciar o pagamento
+ * (Checkout Transparente). Valida o formato.
+ */
+export async function salvarEmailCheckout(
   sessionId: string,
   email: string,
-): Promise<CheckoutData> {
+): Promise<void> {
   const session = await prisma.session.findUnique({ where: { id: sessionId } });
   if (!session) throw new Error("Sessão não encontrada.");
 
@@ -252,16 +251,6 @@ export async function iniciarCheckout(
     where: { id: sessionId },
     data: { email: emailLimpo },
   });
-
-  // Importação dinâmica para não acoplar o SDK do Mercado Pago ao bundle
-  // das demais actions.
-  const { criarPreferencia } = await import("@/lib/mercadopago");
-  try {
-    return await criarPreferencia(sessionId, emailLimpo);
-  } catch (err) {
-    console.error("[iniciarCheckout] Falha ao criar preferência:", err);
-    throw err;
-  }
 }
 
 // ─── Modo de teste (semente) ──────────────────────────────────────

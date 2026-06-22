@@ -1,4 +1,4 @@
-import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
+import { MercadoPagoConfig, Payment } from "mercadopago";
 
 const PRECO = 9.9;
 
@@ -14,52 +14,55 @@ function baseUrl(): string {
   return process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 }
 
+export interface ResultadoPagamento {
+  status: string | undefined;
+  statusDetail: string | undefined;
+  id: number | undefined;
+  /** Dados do PIX/boleto quando o pagamento fica pendente. */
+  pix?: { qrCode?: string; qrCodeBase64?: string; ticketUrl?: string };
+}
+
 /**
- * Cria uma preferência de pagamento de R$ 9,90 para a sessão e retorna o id da
- * preferência (para o modal/lightbox) e a URL de checkout (init_point, usada
- * como fallback de redirect).
+ * Cria um pagamento (Checkout Transparente / Payment Brick) a partir do
+ * `formData` gerado no navegador pelo Brick. Funciona para cartão e PIX.
+ * O valor é fixado no servidor (R$ 9,90) por segurança.
  */
-export async function criarPreferencia(
+export async function criarPagamento(
   sessionId: string,
-  email: string,
-): Promise<{ preferenceId: string; initPoint: string }> {
-  const preference = new Preference(getConfig());
+  formData: Record<string, unknown>,
+): Promise<ResultadoPagamento> {
+  const payment = new Payment(getConfig());
+
+  const body = {
+    ...formData,
+    transaction_amount: PRECO,
+    external_reference: sessionId,
+    notification_url: `${baseUrl()}/api/mercadopago/webhook`,
+  };
 
   let result;
   try {
-    result = await preference.create({
-      body: {
-        items: [
-          {
-            id: `legado-vivo-${sessionId}`,
-            title: "Meu Legado Vivo — Seu perfil completo",
-            description: "Diagnóstico completo: arquétipo, dimensões e ações.",
-            quantity: 1,
-            unit_price: PRECO,
-            currency_id: "BRL",
-          },
-        ],
-        payer: { email },
-        external_reference: sessionId,
-        back_urls: {
-          success: `${baseUrl()}/resultado?session=${sessionId}&pago=1`,
-          pending: `${baseUrl()}/resultado?session=${sessionId}`,
-          failure: `${baseUrl()}/checkout?session=${sessionId}&erro=1`,
-        },
-        auto_return: "approved",
-        notification_url: `${baseUrl()}/api/mercadopago/webhook`,
-      },
-    });
+    result = await payment.create({
+      body,
+    } as Parameters<Payment["create"]>[0]);
   } catch (err) {
-    console.error("[criarPreferencia] Falha no Mercado Pago:", err);
+    console.error("[criarPagamento] Falha no Mercado Pago:", err);
     throw err;
   }
 
-  const url = result.init_point ?? result.sandbox_init_point;
-  if (!result.id || !url) {
-    throw new Error("Mercado Pago não retornou os dados de checkout.");
-  }
-  return { preferenceId: result.id, initPoint: url };
+  const tx = result.point_of_interaction?.transaction_data;
+  return {
+    status: result.status,
+    statusDetail: result.status_detail,
+    id: result.id,
+    pix: tx
+      ? {
+          qrCode: tx.qr_code,
+          qrCodeBase64: tx.qr_code_base64,
+          ticketUrl: tx.ticket_url,
+        }
+      : undefined,
+  };
 }
 
 /**

@@ -1,17 +1,24 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useRouter, useSearchParams } from "next/navigation";
-import { iniciarCheckout } from "../actions";
+import { salvarEmailCheckout } from "../actions";
 
 const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MERCADO_PAGO_PUBLIC_KEY;
 
-interface MercadoPagoCheckout {
-  open: () => void;
+interface BrickController {
+  unmount: () => void;
+}
+interface BricksBuilder {
+  create: (
+    brick: string,
+    container: string,
+    settings: unknown,
+  ) => Promise<BrickController>;
 }
 interface MercadoPagoInstance {
-  checkout: (opts: { preference: { id: string } }) => MercadoPagoCheckout;
+  bricks: () => BricksBuilder;
 }
 declare global {
   interface Window {
@@ -22,47 +29,166 @@ declare global {
   }
 }
 
+interface PixData {
+  qrCode?: string;
+  qrCodeBase64?: string;
+  ticketUrl?: string;
+}
+
+function SelosConfianca() {
+  return (
+    <div className="mt-6 border-t border-roxo/15 pt-5">
+      <div className="flex items-center justify-center gap-2 mb-3">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden
+        >
+          <rect
+            x="4"
+            y="10"
+            width="16"
+            height="11"
+            rx="2"
+            stroke="#9DE39D"
+            strokeWidth="1.8"
+          />
+          <path
+            d="M8 10V7a4 4 0 0 1 8 0v3"
+            stroke="#9DE39D"
+            strokeWidth="1.8"
+          />
+        </svg>
+        <span className="text-[#9DE39D] text-xs font-semibold tracking-wide">
+          Pagamento 100% seguro
+        </span>
+      </div>
+      <p className="text-creme-suave/50 text-xs text-center leading-relaxed mb-4">
+        Seus dados são criptografados (SSL) e processados com padrão de
+        segurança PCI. Não armazenamos os dados do seu cartão.
+      </p>
+      <div className="flex items-center justify-center gap-3 flex-wrap">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-fundo px-3 py-1.5 border border-roxo/15">
+          <span className="text-creme-suave/70 text-[11px]">Processado por</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/6.6.135/mercadopago/logo__large.png"
+            alt="Mercado Pago"
+            width={78}
+            height={20}
+          />
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-fundo px-3 py-1.5 border border-roxo/15 text-creme-suave/60 text-[11px] font-semibold">
+          SSL
+        </span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-fundo px-3 py-1.5 border border-roxo/15 text-creme-suave/60 text-[11px] font-semibold">
+          PCI DSS
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function CheckoutInterno() {
   const router = useRouter();
   const params = useSearchParams();
   const sessionId = params.get("session");
-  const erroPagamento = params.get("erro") === "1";
 
   const [email, setEmail] = useState("");
-  const [enviando, setEnviando] = useState(false);
+  const [etapa, setEtapa] = useState<"email" | "pagamento">("email");
+  const [salvando, setSalvando] = useState(false);
+  const [sdkPronto, setSdkPronto] = useState(false);
+  const [pix, setPix] = useState<PixData | null>(null);
+  const [pendente, setPendente] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+
+  const brickCriado = useRef(false);
 
   const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-  async function pagar() {
+  async function continuar() {
     if (!sessionId || !emailValido) return;
-    setEnviando(true);
+    setSalvando(true);
     setErro(null);
     try {
-      const { preferenceId, initPoint } = await iniciarCheckout(sessionId, email);
-
-      // Tenta abrir o checkout como modal (lightbox), mantendo o usuário no
-      // site. Se o SDK ou a chave pública não estiverem disponíveis, cai para
-      // o redirect tradicional — a venda nunca trava.
-      if (MP_PUBLIC_KEY && typeof window !== "undefined" && window.MercadoPago) {
-        try {
-          const mp = new window.MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
-          mp.checkout({ preference: { id: preferenceId } }).open();
-          setEnviando(false);
-          return;
-        } catch (e) {
-          console.error("[checkout] Falha ao abrir modal, usando redirect:", e);
-        }
-      }
-
-      window.location.href = initPoint;
+      await salvarEmailCheckout(sessionId, email);
+      setEtapa("pagamento");
     } catch {
-      setErro(
-        "Não foi possível abrir o pagamento agora. Verifique seu e-mail e tente novamente.",
-      );
-      setEnviando(false);
+      setErro("Não foi possível continuar. Verifique seu e-mail.");
+    } finally {
+      setSalvando(false);
     }
   }
+
+  // Monta o Payment Brick quando a etapa de pagamento começa e o SDK carregou.
+  useEffect(() => {
+    if (etapa !== "pagamento" || !sdkPronto || brickCriado.current) return;
+    if (!MP_PUBLIC_KEY || !window.MercadoPago || !sessionId) {
+      setErro("Pagamento indisponível no momento.");
+      return;
+    }
+    brickCriado.current = true;
+
+    const mp = new window.MercadoPago(MP_PUBLIC_KEY, { locale: "pt-BR" });
+    const bricks = mp.bricks();
+
+    bricks
+      .create("payment", "payment_brick_container", {
+        initialization: {
+          amount: 9.9,
+          payer: { email: email.trim().toLowerCase() },
+        },
+        customization: {
+          visual: { style: { theme: "dark" } },
+          paymentMethods: {
+            creditCard: "all",
+            debitCard: "all",
+            bankTransfer: "all", // PIX
+            maxInstallments: 1,
+          },
+        },
+        callbacks: {
+          onReady: () => {},
+          onError: (error: unknown) => {
+            console.error("[brick] erro:", error);
+          },
+          onSubmit: ({ formData }: { formData: Record<string, unknown> }) => {
+            return fetch("/api/mercadopago/pagar", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sessionId,
+                email: email.trim().toLowerCase(),
+                formData,
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                if (!data.ok) throw new Error(data.erro || "Falha no pagamento.");
+                if (data.status === "approved") {
+                  router.push(`/resultado?session=${sessionId}&pago=1`);
+                  return;
+                }
+                if (data.pix?.qrCodeBase64 || data.pix?.qrCode) {
+                  setPix(data.pix);
+                  return;
+                }
+                if (data.status === "in_process" || data.status === "pending") {
+                  setPendente(true);
+                  return;
+                }
+                throw new Error("Pagamento não aprovado.");
+              });
+          },
+        },
+      })
+      .catch((e) => {
+        console.error("[brick] falha ao montar:", e);
+        setErro("Não foi possível carregar o pagamento. Recarregue a página.");
+      });
+  }, [etapa, sdkPronto, email, sessionId, router]);
 
   if (!sessionId) {
     return (
@@ -75,9 +201,75 @@ function CheckoutInterno() {
     );
   }
 
+  // ── Tela de PIX gerado ───────────────────────────────────────────
+  if (pix) {
+    return (
+      <main className="app-shell justify-center text-center">
+        <div className="fade-in">
+          <h1 className="text-2xl text-creme mb-3">Quase lá!</h1>
+          <p className="text-creme-suave/80 text-sm mb-5">
+            Escaneie o QR Code abaixo no app do seu banco. Assim que o PIX for
+            confirmado, liberamos seu acesso e enviamos por e-mail.
+          </p>
+          {pix.qrCodeBase64 && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`data:image/png;base64,${pix.qrCodeBase64}`}
+              alt="QR Code do PIX"
+              width={220}
+              height={220}
+              className="mx-auto rounded-2xl bg-white p-3"
+            />
+          )}
+          {pix.qrCode && (
+            <div className="mt-5">
+              <p className="text-creme-suave/60 text-xs mb-2">
+                Ou copie o código PIX:
+              </p>
+              <button
+                onClick={() => navigator.clipboard.writeText(pix.qrCode!)}
+                className="w-full rounded-2xl border border-roxo/30 bg-fundo-suave p-3 text-creme-suave/80 text-xs break-all"
+              >
+                {pix.qrCode}
+                <span className="block mt-2 text-roxo">Toque para copiar</span>
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => router.push(`/resultado?session=${sessionId}`)}
+            className="w-full text-center text-creme-suave/60 text-sm mt-6 underline"
+          >
+            Já paguei — ver meu resultado
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Tela de pagamento pendente (sem PIX, ex: em análise) ──────────
+  if (pendente) {
+    return (
+      <main className="app-shell justify-center text-center">
+        <div className="fade-in">
+          <div className="text-5xl mb-4">⏳</div>
+          <h1 className="text-2xl text-creme mb-3">Pagamento em análise</h1>
+          <p className="text-creme-suave/80 text-sm">
+            Estamos confirmando seu pagamento. Assim que for aprovado, você
+            recebe o acesso por e-mail. Pode levar alguns minutos.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="app-shell justify-center">
-      <Script src="https://sdk.mercadopago.com/js/v2" strategy="afterInteractive" />
+      <Script
+        src="https://sdk.mercadopago.com/js/v2"
+        strategy="afterInteractive"
+        onLoad={() => setSdkPronto(true)}
+        onReady={() => setSdkPronto(true)}
+      />
       <div className="fade-in">
         <p className="text-roxo text-xs tracking-[0.2em] uppercase mb-3">
           Perfil completo
@@ -106,37 +298,55 @@ function CheckoutInterno() {
             <span className="font-titulo text-2xl text-creme">R$ 9,90</span>
           </div>
           <p className="text-creme-suave/50 text-xs">
-            Pagamento único e seguro via Mercado Pago.
+            Pagamento único. Cartão ou PIX.
           </p>
         </div>
 
-        <label className="block text-creme-suave/80 text-sm mb-2">
-          Para onde enviamos seu acesso?
-        </label>
-        <input
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="seu@email.com"
-          className="w-full rounded-2xl border border-roxo/25 bg-fundo-suave p-4 text-creme placeholder:text-creme-suave/35 mb-4 focus:border-roxo/70 transition"
-        />
-
-        {erroPagamento && (
-          <p className="text-amber-300 text-sm mb-3">
-            O pagamento anterior não foi concluído. Você pode tentar de novo.
-          </p>
+        {etapa === "email" && (
+          <>
+            <label className="block text-creme-suave/80 text-sm mb-2">
+              Para onde enviamos seu acesso?
+            </label>
+            <input
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              className="w-full rounded-2xl border border-roxo/25 bg-fundo-suave p-4 text-creme placeholder:text-creme-suave/35 mb-4 focus:border-roxo/70 transition"
+            />
+            {erro && <p className="text-red-300 text-sm mb-3">{erro}</p>}
+            <button
+              onClick={continuar}
+              disabled={!emailValido || salvando}
+              className="w-full rounded-full bg-roxo py-3.5 text-fundo font-semibold text-base transition active:scale-[0.99] disabled:opacity-40"
+            >
+              {salvando ? "Carregando…" : "Continuar para o pagamento"}
+            </button>
+          </>
         )}
-        {erro && <p className="text-red-300 text-sm mb-3">{erro}</p>}
 
-        <button
-          onClick={pagar}
-          disabled={!emailValido || enviando}
-          className="w-full rounded-full bg-roxo py-3.5 text-fundo font-semibold text-base transition active:scale-[0.99] disabled:opacity-40"
-        >
-          {enviando ? "Abrindo pagamento…" : "Pagar R$ 9,90 e desbloquear"}
-        </button>
+        {etapa === "pagamento" && (
+          <>
+            <p className="text-creme-suave/70 text-xs mb-3">
+              Enviaremos o acesso para <strong>{email.trim()}</strong>.{" "}
+              <button
+                onClick={() => {
+                  setEtapa("email");
+                  brickCriado.current = false;
+                }}
+                className="text-roxo underline"
+              >
+                alterar
+              </button>
+            </p>
+            <div id="payment_brick_container" />
+            {erro && <p className="text-red-300 text-sm mt-3">{erro}</p>}
+          </>
+        )}
+
+        <SelosConfianca />
 
         <button
           onClick={() => router.push(`/resultado?session=${sessionId}`)}
