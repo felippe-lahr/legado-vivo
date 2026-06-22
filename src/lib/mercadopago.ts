@@ -1,4 +1,5 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
+import { randomUUID } from "crypto";
 
 const PRECO = 9.9;
 
@@ -44,9 +45,13 @@ export async function criarPagamento(
   try {
     result = await payment.create({
       body,
+      requestOptions: { idempotencyKey: randomUUID() },
     } as Parameters<Payment["create"]>[0]);
   } catch (err) {
-    console.error("[criarPagamento] Falha no Mercado Pago:", err);
+    console.error(
+      "[criarPagamento] Falha no Mercado Pago:",
+      JSON.stringify(err, Object.getOwnPropertyNames(err ?? {})),
+    );
     throw err;
   }
 
